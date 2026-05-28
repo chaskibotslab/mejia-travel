@@ -4,6 +4,7 @@ import './globals.css';
 import BottomNav from '@/components/BottomNav';
 import TopBar from '@/components/TopBar';
 import PWARegister from '@/components/PWARegister';
+import AIAssistant from '@/components/AIAssistant';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -36,9 +37,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="es" className={inter.variable}>
       <body className="min-h-screen bg-slate-50 text-slate-900">
         <TopBar />
-        <main className="pb-20 max-w-md mx-auto sm:max-w-lg md:max-w-2xl lg:max-w-4xl">
+        <main className="pb-24 max-w-md mx-auto sm:max-w-lg md:max-w-2xl lg:max-w-4xl px-4 pt-4">
           {children}
         </main>
+        <AIAssistant />
         <BottomNav />
         <PWARegister />
       </body>

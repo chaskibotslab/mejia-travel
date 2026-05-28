@@ -18,8 +18,8 @@ export default function CategoryTile({ href, label, color, icon, className }: Pr
       className={cn('category-tile', className)}
       style={{ background: color || '#1B97A3' }}
     >
-      <IconCmp className="icon w-12 h-12 sm:w-14 sm:h-14" strokeWidth={1.4} />
-      <span className="label uppercase">{label}</span>
+      <IconCmp className="icon w-8 h-8 sm:w-12 sm:h-12" strokeWidth={1.5} />
+      <span className="label text-[10px] sm:text-sm leading-tight">{label}</span>
     </Link>
   );
 }

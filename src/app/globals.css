@@ -38,8 +38,8 @@ body {
 .category-tile {
   @apply relative overflow-hidden rounded-2xl shadow-card flex flex-col items-center justify-center text-white font-semibold aspect-[4/5] transition-transform active:scale-95 hover:scale-[1.02];
 }
-.category-tile .icon { @apply mb-3 opacity-90; }
-.category-tile .label { @apply text-sm sm:text-base tracking-wide text-center px-2 drop-shadow; }
+.category-tile .icon { @apply mb-1.5 sm:mb-3 opacity-95; }
+.category-tile .label { @apply tracking-wide text-center px-1 drop-shadow font-semibold; }
 
 /* Botones acción ficha */
 .action-btn {
@@ -48,3 +48,11 @@ body {
 .action-btn .ring {
   @apply w-14 h-14 rounded-full flex items-center justify-center shadow-soft transition-transform active:scale-90;
 }
+
+/* Ocultar scrollbar en carruseles horizontales */
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+
+/* Tile compacto para grilla 3 cols */
+.category-tile { aspect-ratio: 1/1; }
+@media (min-width: 640px) { .category-tile { aspect-ratio: 4/5; } }
