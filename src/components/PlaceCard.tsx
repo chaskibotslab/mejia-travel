@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Star, MapPin, BadgeCheck } from 'lucide-react';
+import SafeImage from './SafeImage';
 
 type Props = {
   href: string;
@@ -35,26 +36,23 @@ export default function PlaceCard({
       className="group block rounded-2xl bg-white border border-slate-200 overflow-hidden shadow-soft hover:shadow-card transition-all active:scale-[0.98]"
     >
       <div className={`relative ${h} overflow-hidden bg-slate-100`}>
-        {image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={image}
-            alt={name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            loading="lazy"
-          />
-        ) : (
-          <div className="w-full h-full relative overflow-hidden bg-gradient-to-br from-fuchsia-400 via-purple-500 to-indigo-600 grid place-items-center">
-            <div className="absolute -top-8 -right-8 w-24 h-24 bg-white/15 rounded-full blur-2xl" />
-            <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
-            <div className="relative text-white text-center px-3">
-              <div className="w-12 h-12 mx-auto rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 grid place-items-center mb-1.5">
-                <MapPin className="w-6 h-6" strokeWidth={1.8} />
+        <SafeImage
+          src={image}
+          alt={name}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          fallback={
+            <div className="w-full h-full relative overflow-hidden bg-gradient-to-br from-fuchsia-400 via-purple-500 to-indigo-600 grid place-items-center">
+              <div className="absolute -top-8 -right-8 w-24 h-24 bg-white/15 rounded-full blur-2xl" />
+              <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+              <div className="relative text-white text-center px-3">
+                <div className="w-12 h-12 mx-auto rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 grid place-items-center mb-1.5">
+                  <MapPin className="w-6 h-6" strokeWidth={1.8} />
+                </div>
+                <p className="text-xs font-bold drop-shadow line-clamp-2">{name}</p>
               </div>
-              <p className="text-xs font-bold drop-shadow line-clamp-2">{name}</p>
             </div>
-          </div>
-        )}
+          }
+        />
         {badge && (
           <div
             className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[10px] font-bold text-white uppercase tracking-wide"
