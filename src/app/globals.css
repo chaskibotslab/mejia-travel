@@ -34,12 +34,7 @@ body {
 @keyframes fadeIn { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: none } }
 .fade-in { animation: fadeIn .3s ease-out; }
 
-/* Card tile (estilo capturas) */
-.category-tile {
-  @apply relative overflow-hidden rounded-2xl shadow-card flex flex-col items-center justify-center text-white font-semibold aspect-[4/5] transition-transform active:scale-95 hover:scale-[1.02];
-}
-.category-tile .icon { @apply mb-1.5 sm:mb-3 opacity-95; }
-.category-tile .label { @apply tracking-wide text-center px-1 drop-shadow font-semibold; }
+/* (Legacy) Antes era .category-tile con gradient — ahora cada tile maneja su propio estilo */
 
 /* Botones acción ficha — estilo vibrante */
 .action-btn {
@@ -53,6 +48,3 @@ body {
 .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 
-/* Tile compacto para grilla 3 cols */
-.category-tile { aspect-ratio: 1/1; }
-@media (min-width: 640px) { .category-tile { aspect-ratio: 4/5; } }

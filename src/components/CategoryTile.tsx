@@ -11,59 +11,71 @@ type Props = {
   className?: string;
 };
 
-// Mapa: slug-hash -> gradient vibrante estilo Instagram
-const GRADIENTS = [
-  'from-pink-500 via-rose-500 to-orange-400',
-  'from-fuchsia-500 via-purple-500 to-indigo-600',
-  'from-cyan-400 via-blue-500 to-purple-600',
-  'from-emerald-400 via-teal-500 to-cyan-600',
-  'from-amber-400 via-orange-500 to-pink-500',
-  'from-violet-500 via-purple-600 to-fuchsia-600',
-  'from-rose-400 via-pink-500 to-purple-600',
-  'from-lime-400 via-emerald-500 to-teal-600',
-];
+// Paleta semántica por slug/label (fallback si no viene color de BD)
+const PALETTE: Record<string, { bg: string; ring: string; icon: string }> = {
+  gastronomia:    { bg: 'bg-orange-50',   ring: 'bg-orange-100',   icon: 'text-orange-600' },
+  hospedaje:      { bg: 'bg-violet-50',   ring: 'bg-violet-100',   icon: 'text-violet-600' },
+  turismo:        { bg: 'bg-emerald-50',  ring: 'bg-emerald-100',  icon: 'text-emerald-600' },
+  medicina:       { bg: 'bg-rose-50',     ring: 'bg-rose-100',     icon: 'text-rose-600' },
+  'medicina-y-salud': { bg: 'bg-rose-50', ring: 'bg-rose-100',     icon: 'text-rose-600' },
+  salud:          { bg: 'bg-rose-50',     ring: 'bg-rose-100',     icon: 'text-rose-600' },
+  automotriz:     { bg: 'bg-slate-50',    ring: 'bg-slate-100',    icon: 'text-slate-700' },
+  'servicios-publicos': { bg: 'bg-amber-50', ring: 'bg-amber-100', icon: 'text-amber-600' },
+  servicios:      { bg: 'bg-amber-50',    ring: 'bg-amber-100',    icon: 'text-amber-600' },
+  educacion:      { bg: 'bg-sky-50',      ring: 'bg-sky-100',      icon: 'text-sky-600' },
+  compras:        { bg: 'bg-pink-50',     ring: 'bg-pink-100',     icon: 'text-pink-600' },
+  'compras-e-insumos': { bg: 'bg-pink-50',ring: 'bg-pink-100',     icon: 'text-pink-600' },
+  belleza:        { bg: 'bg-fuchsia-50',  ring: 'bg-fuchsia-100',  icon: 'text-fuchsia-600' },
+  transporte:     { bg: 'bg-cyan-50',     ring: 'bg-cyan-100',     icon: 'text-cyan-700' },
+  inmobiliaria:   { bg: 'bg-stone-50',    ring: 'bg-stone-100',    icon: 'text-stone-700' },
+  default:        { bg: 'bg-slate-50',    ring: 'bg-slate-100',    icon: 'text-slate-600' },
+};
 
-function hashGradient(seed: string) {
-  let h = 0;
-  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
-  return GRADIENTS[h % GRADIENTS.length];
+function slugify(s: string) {
+  return s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
 }
 
-export default function CategoryTile({ href, label, icon, image, className }: Props) {
+export default function CategoryTile({ href, label, icon, color, className }: Props) {
   const IconCmp = (icon && (Icons as any)[icon]) || Icons.Sparkles;
-  const grad = hashGradient(label);
+  const key = slugify(label);
+  const palette = PALETTE[key] ?? PALETTE.default;
+
+  // Si la BD trae un color específico, lo usamos para el círculo
+  const ringStyle = color ? { background: `${color}1A` } : undefined; // 1A = 10% alpha
+  const iconStyle = color ? { color } : undefined;
 
   return (
     <Link
       href={href}
       className={cn(
-        'group relative overflow-hidden rounded-2xl aspect-square shadow-[0_6px_18px_rgba(120,40,200,0.18)] active:scale-95 hover:scale-[1.03] transition-transform',
+        'group flex flex-col items-center gap-2 p-3 rounded-2xl bg-white border border-slate-100 hover:border-slate-200 hover:shadow-card transition-all active:scale-95',
         className
       )}
     >
-      {/* Fondo: si hay imagen úsala, si no, gradient vibrante */}
-      {image ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={image} alt={label} className="absolute inset-0 w-full h-full object-cover" />
-      ) : (
-        <div className={`absolute inset-0 bg-gradient-to-br ${grad}`} />
-      )}
-
-      {/* Overlay degradado para legibilidad */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-
-      {/* Brillo decorativo (estilo Instagram) */}
-      <div className="absolute -top-6 -right-6 w-20 h-20 bg-white/20 rounded-full blur-2xl group-hover:scale-150 transition-transform" />
-
-      {/* Contenido */}
-      <div className="relative h-full flex flex-col justify-between p-3">
-        <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 grid place-items-center text-white">
-          <IconCmp className="w-5 h-5" strokeWidth={2} />
-        </div>
-        <div className="text-white">
-          <p className="text-sm font-extrabold leading-tight drop-shadow-md">{label}</p>
-        </div>
+      {/* Círculo con ícono */}
+      <div
+        className={cn(
+          'w-14 h-14 sm:w-16 sm:h-16 rounded-2xl grid place-items-center transition-transform group-hover:scale-110 group-active:scale-95',
+          !color && palette.ring
+        )}
+        style={ringStyle}
+      >
+        <IconCmp
+          className={cn('w-7 h-7 sm:w-8 sm:h-8', !color && palette.icon)}
+          style={iconStyle}
+          strokeWidth={1.8}
+        />
       </div>
+
+      {/* Nombre */}
+      <span className="text-[11px] sm:text-xs font-semibold text-slate-700 text-center leading-tight line-clamp-2">
+        {label}
+      </span>
     </Link>
   );
 }
