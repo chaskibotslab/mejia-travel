@@ -24,13 +24,13 @@ export default function ImageUpload({
     const { data: u } = await supabase.auth.getUser();
     const ext = file.name.split('.').pop();
     const path = `${folder}/${u.user?.id ?? 'anon'}/${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from('public').upload(path, file, { upsert: false });
+    const { error } = await supabase.storage.from('media').upload(path, file, { upsert: false });
     if (error) {
       alert(error.message);
       setBusy(false);
       return;
     }
-    const { data } = supabase.storage.from('public').getPublicUrl(path);
+    const { data } = supabase.storage.from('media').getPublicUrl(path);
     onChange(data.publicUrl);
     setBusy(false);
   }

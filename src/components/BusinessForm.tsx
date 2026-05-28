@@ -86,13 +86,13 @@ export default function BusinessForm({ businessId }: { businessId?: string }) {
     setUploading(true);
     const ext = file.name.split('.').pop();
     const path = `businesses/${user.id}/${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from('public').upload(path, file, { upsert: false });
+    const { error } = await supabase.storage.from('media').upload(path, file, { upsert: false });
     if (error) {
       alert(error.message);
       setUploading(false);
       return;
     }
-    const { data } = supabase.storage.from('public').getPublicUrl(path);
+    const { data } = supabase.storage.from('media').getPublicUrl(path);
     set(field, data.publicUrl);
     setUploading(false);
   }
