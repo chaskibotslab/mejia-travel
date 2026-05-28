@@ -44,8 +44,15 @@ export default function PlaceCard({
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-brand-100 to-accent-50 grid place-items-center text-brand-400 text-xs">
-            Sin imagen
+          <div className="w-full h-full relative overflow-hidden bg-gradient-to-br from-fuchsia-400 via-purple-500 to-indigo-600 grid place-items-center">
+            <div className="absolute -top-8 -right-8 w-24 h-24 bg-white/15 rounded-full blur-2xl" />
+            <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+            <div className="relative text-white text-center px-3">
+              <div className="w-12 h-12 mx-auto rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 grid place-items-center mb-1.5">
+                <MapPin className="w-6 h-6" strokeWidth={1.8} />
+              </div>
+              <p className="text-xs font-bold drop-shadow line-clamp-2">{name}</p>
+            </div>
           </div>
         )}
         {badge && (

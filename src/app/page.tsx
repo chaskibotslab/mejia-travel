@@ -18,7 +18,7 @@ export default async function HomePage() {
     { data: eventsData },
     { data: routesData },
   ] = await Promise.all([
-    supabase.from('categories').select('*').is('parent_id', null).order('sort_order').limit(8),
+    supabase.from('categories').select('*').is('parent_id', null).order('sort_order'),
     supabase.from('banners').select('*').eq('is_active', true).order('sort_order'),
     supabase.from('businesses').select('id, slug, name, cover_image, short_description, address, rating_avg, rating_count, is_verified, categories(name_es)').eq('is_published', true).eq('is_featured', true).order('created_at', { ascending: false }).limit(6),
     supabase.from('events').select('*').eq('is_published', true).gte('starts_at', new Date().toISOString()).order('starts_at').limit(6),
@@ -71,9 +71,14 @@ export default async function HomePage() {
                   href={`/rutas/${r.slug}`}
                   className="snap-start flex-shrink-0 w-72 group relative h-44 rounded-2xl overflow-hidden shadow-[0_8px_24px_rgba(120,40,200,0.18)] active:scale-[0.98]"
                 >
-                  {r.cover_image && (
+                  {r.cover_image ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={r.cover_image} alt={r.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                  ) : (
+                    <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${r.color || '#7c3aed'}, ${r.color || '#7c3aed'}cc)` }}>
+                      <div className="absolute -top-6 -right-6 w-24 h-24 bg-white/15 rounded-full blur-2xl" />
+                      <Route className="absolute right-4 top-4 w-12 h-12 text-white/30" strokeWidth={1.5} />
+                    </div>
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-3 text-white">

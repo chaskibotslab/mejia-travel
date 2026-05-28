@@ -27,7 +27,13 @@ export default function EventCard({ id, title, cover_image, starts_at, location,
           // eslint-disable-next-line @next/next/no-img-element
           <img src={cover_image} alt={title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-accent-200 to-brand-200" />
+          <div className="w-full h-full relative overflow-hidden bg-gradient-to-br from-orange-400 via-pink-500 to-rose-600">
+            <div className="absolute -top-6 -right-6 w-20 h-20 bg-white/20 rounded-full blur-2xl" />
+            <div className="absolute -bottom-8 -left-4 w-28 h-28 bg-white/10 rounded-full blur-2xl" />
+            <div className="absolute inset-0 grid place-items-center text-white/40">
+              <Calendar className="w-12 h-12" strokeWidth={1.5} />
+            </div>
+          </div>
         )}
         <div className="absolute top-2 left-2 bg-white rounded-xl px-2 py-1 text-center shadow-card">
           <div className="text-[10px] font-bold text-accent-600 leading-none">{month}</div>
