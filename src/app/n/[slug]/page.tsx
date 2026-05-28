@@ -69,7 +69,7 @@ export default async function BusinessPage({ params }: { params: { slug: string 
               event="call"
               href={telLink(b.phone)}
               ariaLabel="Llamar"
-              ringClass="bg-emerald-100 text-emerald-600"
+              ringClass="bg-gradient-to-br from-emerald-400 via-teal-500 to-cyan-600"
               label="Llamar"
             >
               <Phone className="w-6 h-6" />
@@ -81,7 +81,7 @@ export default async function BusinessPage({ params }: { params: { slug: string 
               event="whatsapp"
               href={waLink(b.whatsapp, `Hola ${b.name}, los contacto desde Mejía Travel.`)}
               ariaLabel="WhatsApp"
-              ringClass="bg-emerald-100 text-emerald-600"
+              ringClass="bg-gradient-to-br from-green-400 via-emerald-500 to-teal-600"
               label="WhatsApp"
               external
             >
@@ -94,7 +94,7 @@ export default async function BusinessPage({ params }: { params: { slug: string 
               event="map"
               href={mapLink(b.latitude, b.longitude, b.name)}
               ariaLabel="Mapa"
-              ringClass="bg-blue-100 text-blue-600"
+              ringClass="bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600"
               label="Mapa"
               external
             >
@@ -107,7 +107,7 @@ export default async function BusinessPage({ params }: { params: { slug: string 
               event="website"
               href={b.website}
               ariaLabel="Sitio web"
-              ringClass="bg-violet-100 text-violet-600"
+              ringClass="bg-gradient-to-br from-fuchsia-500 via-purple-500 to-indigo-600"
               label="Web"
               external
             >

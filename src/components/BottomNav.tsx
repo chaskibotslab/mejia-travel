@@ -1,40 +1,69 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Calendar, ShoppingBag, MapPin, User } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Home, Calendar, Search, MapPin, User } from 'lucide-react';
 
-const items = [
+const left = [
   { href: '/', label: 'Inicio', icon: Home },
   { href: '/eventos', label: 'Eventos', icon: Calendar },
-  { href: '/mercado', label: 'Mercado', icon: ShoppingBag },
+];
+const right = [
   { href: '/mapa', label: 'Mapa', icon: MapPin },
-  { href: '/cuenta', label: 'Cuenta', icon: User },
+  { href: '/cuenta', label: 'Perfil', icon: User },
 ];
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const isActive = (href: string) => (href === '/' ? pathname === '/' : pathname.startsWith(href));
+
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur border-t border-slate-200 safe-bottom">
-      <ul className="max-w-md mx-auto sm:max-w-lg md:max-w-2xl lg:max-w-4xl grid grid-cols-5">
-        {items.map(({ href, label, icon: Icon }) => {
-          const active = href === '/' ? pathname === '/' : pathname.startsWith(href);
-          return (
-            <li key={href}>
-              <Link
-                href={href}
-                className={cn(
-                  'flex flex-col items-center justify-center gap-0.5 py-2.5 text-[11px] transition',
-                  active ? 'text-brand-600' : 'text-slate-500 hover:text-slate-800'
-                )}
-              >
-                <Icon className={cn('w-5 h-5', active && 'stroke-[2.4]')} />
-                <span className="font-medium">{label}</span>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+    <nav className="fixed bottom-0 inset-x-0 z-30 pb-3 pointer-events-none">
+      <div className="max-w-md mx-auto sm:max-w-lg px-4 pointer-events-none">
+        <div className="relative pointer-events-auto">
+          {/* Barra principal flotante */}
+          <div className="relative bg-white shadow-[0_8px_30px_rgba(0,0,0,0.12)] rounded-3xl border border-slate-100 grid grid-cols-5 items-center h-[68px] overflow-hidden">
+            {left.map((it) => (
+              <NavItem key={it.href} {...it} active={isActive(it.href)} />
+            ))}
+            {/* Espacio para el botón central flotante */}
+            <div aria-hidden />
+            {right.map((it) => (
+              <NavItem key={it.href} {...it} active={isActive(it.href)} />
+            ))}
+          </div>
+
+          {/* Botón central flotante (Buscar) */}
+          <Link
+            href="/buscar"
+            aria-label="Buscar"
+            className={`absolute -top-5 left-1/2 -translate-x-1/2 w-16 h-16 rounded-full grid place-items-center text-white shadow-[0_8px_24px_rgba(120,40,200,0.45)] transition-transform active:scale-90 hover:scale-105 ${
+              isActive('/buscar')
+                ? 'bg-gradient-to-br from-pink-500 via-fuchsia-500 to-purple-600'
+                : 'bg-gradient-to-br from-fuchsia-500 via-purple-500 to-indigo-600'
+            }`}
+          >
+            <Search className="w-7 h-7" strokeWidth={2.4} />
+          </Link>
+        </div>
+      </div>
     </nav>
+  );
+}
+
+function NavItem({ href, label, icon: Icon, active }: { href: string; label: string; icon: any; active: boolean }) {
+  return (
+    <Link
+      href={href}
+      className="relative flex flex-col items-center justify-center gap-0.5 h-full"
+    >
+      <Icon
+        className={`w-5 h-5 transition-all ${active ? 'text-fuchsia-600 scale-110' : 'text-slate-400'}`}
+        strokeWidth={active ? 2.6 : 2}
+      />
+      <span className={`text-[10px] font-bold transition ${active ? 'text-fuchsia-600' : 'text-slate-400'}`}>
+        {label}
+      </span>
+      {active && <span className="absolute top-1 w-1.5 h-1.5 rounded-full bg-fuchsia-500" />}
+    </Link>
   );
 }

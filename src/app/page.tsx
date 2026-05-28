@@ -113,6 +113,7 @@ export default async function HomePage() {
                 label={c.name_es}
                 color={c.color}
                 icon={c.icon}
+                image={c.cover_image}
               />
             ))}
           </div>

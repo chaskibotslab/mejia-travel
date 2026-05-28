@@ -105,22 +105,26 @@ export default function HomeHero({ banners }: { banners: Banner[] }) {
         </button>
       </form>
 
-      {/* Quick filters debajo del buscador */}
-      <div className="px-4 mt-3 flex gap-2 overflow-x-auto pb-1 max-w-3xl sm:mx-auto scrollbar-hide">
+      {/* Quick filters vibrantes debajo del buscador */}
+      <div className="px-4 mt-4 flex gap-2.5 overflow-x-auto pb-1 max-w-3xl sm:mx-auto scrollbar-hide">
         {[
-          { label: '🍽 Comer', href: '/c/gastronomia' },
-          { label: '🏨 Dormir', href: '/c/hospedaje' },
-          { label: '🏔 Turismo', href: '/c/turismo' },
-          { label: '💊 Salud', href: '/c/medicina' },
-          { label: '🚌 Transporte', href: '/c/transporte' },
-          { label: '🛍 Compras', href: '/c/compras' },
+          { label: 'Comer', emoji: '🍽', href: '/c/gastronomia', grad: 'from-orange-400 via-pink-500 to-rose-500' },
+          { label: 'Dormir', emoji: '🏨', href: '/c/hospedaje', grad: 'from-purple-500 via-fuchsia-500 to-pink-500' },
+          { label: 'Turismo', emoji: '🏔', href: '/c/turismo', grad: 'from-cyan-400 via-blue-500 to-indigo-600' },
+          { label: 'Salud', emoji: '💊', href: '/c/medicina', grad: 'from-red-400 via-rose-500 to-pink-600' },
+          { label: 'Transporte', emoji: '🚌', href: '/c/transporte', grad: 'from-emerald-400 via-teal-500 to-cyan-500' },
+          { label: 'Compras', emoji: '🛍', href: '/c/compras', grad: 'from-amber-400 via-orange-500 to-red-500' },
+          { label: 'Belleza', emoji: '✨', href: '/c/belleza', grad: 'from-pink-400 via-fuchsia-500 to-purple-600' },
         ].map((q) => (
           <Link
             key={q.href}
             href={q.href}
-            className="flex-shrink-0 rounded-full bg-white border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-brand-50 hover:border-brand-200 transition"
+            className={`group flex-shrink-0 rounded-2xl text-white font-bold text-xs sm:text-sm shadow-[0_4px_14px_rgba(120,40,200,0.25)] active:scale-95 hover:scale-105 transition-transform overflow-hidden`}
           >
-            {q.label}
+            <div className={`bg-gradient-to-br ${q.grad} px-4 py-2.5 flex items-center gap-1.5`}>
+              <span className="text-base">{q.emoji}</span>
+              <span className="drop-shadow-sm">{q.label}</span>
+            </div>
           </Link>
         ))}
       </div>

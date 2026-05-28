@@ -41,12 +41,12 @@ body {
 .category-tile .icon { @apply mb-1.5 sm:mb-3 opacity-95; }
 .category-tile .label { @apply tracking-wide text-center px-1 drop-shadow font-semibold; }
 
-/* Botones acción ficha */
+/* Botones acción ficha — estilo vibrante */
 .action-btn {
-  @apply flex flex-col items-center gap-1 text-sm font-medium text-gray-700;
+  @apply flex flex-col items-center gap-1.5 text-[11px] font-bold text-slate-700;
 }
 .action-btn .ring {
-  @apply w-14 h-14 rounded-full flex items-center justify-center shadow-soft transition-transform active:scale-90;
+  @apply w-16 h-16 rounded-2xl flex items-center justify-center text-white shadow-[0_8px_20px_rgba(120,40,200,0.25)] transition-all active:scale-90 hover:scale-105 hover:-translate-y-0.5;
 }
 
 /* Ocultar scrollbar en carruseles horizontales */
