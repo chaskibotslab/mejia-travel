@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 250 251 252;
+  --foreground: 17 24 39;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  background: rgb(var(--background));
+  color: rgb(var(--foreground));
+}
+
+body {
+  font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  min-height: 100vh;
+  overscroll-behavior-y: contain;
+}
+
+/* Scrollbar minimalista */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* Leaflet fixes */
+.leaflet-container { z-index: 0; }
+
+/* Animaciones suaves */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: none } }
+.fade-in { animation: fadeIn .3s ease-out; }
+
+/* Card tile (estilo capturas) */
+.category-tile {
+  @apply relative overflow-hidden rounded-2xl shadow-card flex flex-col items-center justify-center text-white font-semibold aspect-[4/5] transition-transform active:scale-95 hover:scale-[1.02];
+}
+.category-tile .icon { @apply mb-3 opacity-90; }
+.category-tile .label { @apply text-sm sm:text-base tracking-wide text-center px-2 drop-shadow; }
+
+/* Botones acción ficha */
+.action-btn {
+  @apply flex flex-col items-center gap-1 text-sm font-medium text-gray-700;
+}
+.action-btn .ring {
+  @apply w-14 h-14 rounded-full flex items-center justify-center shadow-soft transition-transform active:scale-90;
+}
