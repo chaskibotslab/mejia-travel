@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import CategoryTile from '@/components/CategoryTile';
 import HomeHero from '@/components/HomeHero';
@@ -8,7 +9,11 @@ import { ChevronRight, Calendar, Mountain, Compass, Route, Clock } from 'lucide-
 
 export const revalidate = 60;
 
-export default async function HomePage() {
+export default async function HomePage({ searchParams }: { searchParams: { code?: string } }) {
+  // Si Supabase redirigió aquí con ?code=, lo enviamos al callback para intercambiar por sesión.
+  if (searchParams?.code) {
+    redirect(`/auth/callback?code=${searchParams.code}&next=/cuenta`);
+  }
   const supabase = createClient();
 
   const [
