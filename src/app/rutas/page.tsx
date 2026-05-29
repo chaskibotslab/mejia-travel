@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { Clock, Mountain, Route, ChevronRight } from 'lucide-react';
+import SafeImage from '@/components/SafeImage';
 
 export const revalidate = 60;
 
@@ -52,16 +53,18 @@ export default async function RoutesPage() {
               >
                 {/* Imagen de fondo */}
                 <div className="relative h-56 overflow-hidden bg-slate-200">
-                  {r.cover_image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={r.cover_image} alt={r.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                  ) : (
-                    <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${r.color || '#7c3aed'}, ${r.color || '#7c3aed'}cc)` }}>
-                      <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/15 rounded-full blur-3xl" />
-                      <div className="absolute -bottom-10 -left-10 w-44 h-44 bg-white/10 rounded-full blur-3xl" />
-                      <Route className="absolute right-6 top-6 w-20 h-20 text-white/25" strokeWidth={1.5} />
-                    </div>
-                  )}
+                  <SafeImage
+                    src={r.cover_image}
+                    alt={r.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    fallback={
+                      <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${r.color || '#7c3aed'}, ${r.color || '#7c3aed'}cc)` }}>
+                        <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/15 rounded-full blur-3xl" />
+                        <div className="absolute -bottom-10 -left-10 w-44 h-44 bg-white/10 rounded-full blur-3xl" />
+                        <Route className="absolute right-6 top-6 w-20 h-20 text-white/25" strokeWidth={1.5} />
+                      </div>
+                    }
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent" />
 
                   {/* Badge dificultad */}
