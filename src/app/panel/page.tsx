@@ -19,11 +19,16 @@ export default function OwnerPanelPage() {
         router.push('/cuenta?redirect=/panel');
         return;
       }
+      // Solo admins pueden acceder al panel de negocios
+      const { data: profile } = await supabase.from('profiles').select('role').eq('id', data.user.id).single();
+      if (profile?.role !== 'admin') {
+        router.push('/cuenta');
+        return;
+      }
       setUser(data.user);
       const { data: biz } = await supabase
         .from('businesses')
         .select('*')
-        .eq('owner_id', data.user.id)
         .order('created_at', { ascending: false });
       setBusinesses(biz ?? []);
       setLoading(false);

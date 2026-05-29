@@ -2,7 +2,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { LogIn, LogOut, UserCircle, Briefcase, ShieldCheck, Loader2, Mail, KeyRound } from 'lucide-react';
+import { LogIn, LogOut, UserCircle, ShieldCheck, Loader2, Mail, KeyRound, Store, Tag } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 export default function AccountPage() {
@@ -120,8 +120,9 @@ function AccountInner() {
         </div>
 
         <nav className="space-y-2">
-          <MenuItem href="/cuenta/mis-articulos" icon={UserCircle} label="Mis publicaciones" />
-          <MenuItem href="/panel" icon={Briefcase} label="Soy dueño de un negocio" />
+          <MenuItem href="/mercado/publicar" icon={Store} label="Vender en el Mercado" highlight />
+          <MenuItem href="/cuenta/mis-articulos" icon={Tag} label="Mis publicaciones del mercado" />
+          <MenuItem href="/mercado" icon={UserCircle} label="Ver Mercado de Mejía" />
           {profile?.role === 'admin' && (
             <MenuItem href="/admin" icon={ShieldCheck} label="Panel de administración" />
           )}
@@ -234,15 +235,15 @@ function AccountInner() {
   );
 }
 
-function MenuItem({ href, icon: Icon, label }: { href: string; icon: any; label: string }) {
+function MenuItem({ href, icon: Icon, label, highlight }: { href: string; icon: any; label: string; highlight?: boolean }) {
   return (
     <Link
       href={href}
-      className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white border border-slate-200 shadow-soft hover:shadow-card"
+      className={`flex items-center gap-3 px-4 py-3 rounded-xl shadow-soft hover:shadow-card ${highlight ? 'bg-gradient-to-r from-fuchsia-500 to-rose-500 text-white border-0' : 'bg-white border border-slate-200'}`}
     >
-      <Icon className="w-5 h-5 text-brand-600" />
+      <Icon className={`w-5 h-5 ${highlight ? 'text-white' : 'text-brand-600'}`} />
       <span className="font-semibold flex-1">{label}</span>
-      <span className="text-slate-300">›</span>
+      <span className={highlight ? 'text-white/70' : 'text-slate-300'}>›</span>
     </Link>
   );
 }

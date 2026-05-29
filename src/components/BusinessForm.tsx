@@ -53,6 +53,12 @@ export default function BusinessForm({ businessId }: { businessId?: string }) {
         router.push('/cuenta?redirect=/panel');
         return;
       }
+      // Bloquear creación/edición de negocios a no-admins
+      const { data: prof } = await supabase.from('profiles').select('role').eq('id', u.user.id).single();
+      if (prof?.role !== 'admin') {
+        router.push('/cuenta');
+        return;
+      }
       setUser(u.user);
       const { data: cats } = await supabase
         .from('categories')
