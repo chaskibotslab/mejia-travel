@@ -10,3 +10,12 @@ out
 .snapshots
 next-env.d.ts
 tsconfig.tsbuildinfo
+
+# Capacitor / mobile
+android/
+ios/
+.gradle
+local.properties
+*.keystore
+Pods/
+DerivedData/

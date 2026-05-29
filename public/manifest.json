@@ -1,26 +1,31 @@
 {
-  "name": "Mejía Travel",
-  "short_name": "MejíaTravel",
-  "description": "Todo lo que buscas en el Cantón Mejía: turismo, servicios, mercado y eventos.",
+  "name": "Mejía Travel — Cantón Mejía",
+  "short_name": "Mejía Travel",
+  "description": "Todo lo que buscas en el Cantón Mejía: turismo, hospedaje, gastronomía, servicios, eventos y rutas turísticas.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#F7FAFC",
-  "theme_color": "#1B97A3",
+  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#7c3aed",
+  "theme_color": "#a855f7",
   "orientation": "portrait",
   "lang": "es-EC",
-  "categories": ["travel", "lifestyle", "shopping"],
+  "dir": "ltr",
+  "categories": ["travel", "lifestyle", "shopping", "navigation"],
   "icons": [
-    {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
+    { "src": "/icons/icon-72.png",  "sizes": "72x72",   "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-96.png",  "sizes": "96x96",   "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-128.png", "sizes": "128x128", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-144.png", "sizes": "144x144", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-152.png", "sizes": "152x152", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icons/icon-256.png", "sizes": "256x256", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-384.png", "sizes": "384x384", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Eventos próximos", "short_name": "Eventos", "url": "/eventos", "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }] },
+    { "name": "Mapa", "short_name": "Mapa", "url": "/mapa", "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }] },
+    { "name": "Rutas turísticas", "short_name": "Rutas", "url": "/rutas", "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }] }
   ]
 }

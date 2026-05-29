@@ -45,9 +45,16 @@ export default async function EventsPage() {
                 key={e.id}
                 className="rounded-2xl bg-white border border-slate-200 overflow-hidden shadow-soft"
               >
-                {e.cover_image && (
+                {e.cover_image ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={e.cover_image} alt={e.title} className="w-full aspect-video object-cover" />
+                ) : (
+                  <div className="w-full aspect-video relative overflow-hidden bg-gradient-to-br from-orange-400 via-pink-500 to-rose-600">
+                    <div className="absolute -top-6 -right-6 w-20 h-20 bg-white/20 rounded-full blur-2xl" />
+                    <div className="absolute inset-0 grid place-items-center">
+                      <Calendar className="w-12 h-12 text-white/40" strokeWidth={1.5} />
+                    </div>
+                  </div>
                 )}
                 <div className="p-3 flex gap-3">
                   <div className="flex-shrink-0 w-14 rounded-lg bg-brand-100 text-brand-700 grid place-items-center text-center py-1">

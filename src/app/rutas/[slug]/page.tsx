@@ -2,7 +2,8 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { createClient } from '@/lib/supabase/server';
-import { Clock, Mountain, MapPin, Compass, ChevronRight } from 'lucide-react';
+import { Clock, Mountain, MapPin, Compass, ChevronRight, Route as RouteIcon } from 'lucide-react';
+import SafeImage from '@/components/SafeImage';
 
 const RouteMap = dynamic(() => import('@/components/RouteMap'), { ssr: false });
 
@@ -32,11 +33,19 @@ export default async function TouristRoutePage({ params }: { params: { slug: str
   return (
     <div className="fade-in -mx-4 -mt-4">
       {/* Hero */}
-      <div className="relative h-72 overflow-hidden">
-        {route.cover_image && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={route.cover_image} alt={route.name} className="w-full h-full object-cover" />
-        )}
+      <div className="relative h-72 overflow-hidden" style={{ background: route.color || '#7c3aed' }}>
+        <SafeImage
+          src={route.cover_image}
+          alt={route.name}
+          className="w-full h-full object-cover"
+          fallback={
+            <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${route.color || '#7c3aed'}, ${route.color || '#7c3aed'}cc)` }}>
+              <div className="absolute -top-12 -right-12 w-48 h-48 bg-white/15 rounded-full blur-3xl" />
+              <div className="absolute -bottom-16 -left-12 w-56 h-56 bg-white/10 rounded-full blur-3xl" />
+              <RouteIcon className="absolute right-8 top-8 w-24 h-24 text-white/25" strokeWidth={1.4} />
+            </div>
+          }
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
           <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider mb-2 text-white/90">

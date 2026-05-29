@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import ImageUpload from '@/components/ImageUpload';
 
 export default function NewEventPage() {
   const supabase = createClient();
@@ -42,7 +43,8 @@ export default function NewEventPage() {
       <input required type="datetime-local" value={form.starts_at} onChange={(e) => setForm({...form, starts_at: e.target.value})} className="inp" />
       <label className="text-xs text-slate-500">Fin (opcional)</label>
       <input type="datetime-local" value={form.ends_at} onChange={(e) => setForm({...form, ends_at: e.target.value})} className="inp" />
-      <input placeholder="URL imagen portada" value={form.cover_image} onChange={(e) => setForm({...form, cover_image: e.target.value})} className="inp" />
+      <label className="text-xs text-slate-500">Imagen de portada</label>
+      <ImageUpload value={form.cover_image || null} onChange={(url) => setForm({...form, cover_image: url || ''})} folder="eventos" previewSize="lg" label="Subir foto del evento" />
       <button disabled={loading} className="w-full rounded-xl bg-brand-600 text-white py-3 font-semibold shadow-card">{loading ? 'Guardando…' : 'Crear evento'}</button>
       <style jsx>{`
         .inp { width:100%; border-radius:.75rem; border:1px solid rgb(226 232 240); background:white; padding:.625rem .75rem; font-size:.875rem; }

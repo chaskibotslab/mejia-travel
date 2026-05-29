@@ -2,7 +2,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { LogIn, LogOut, UserCircle, Briefcase, ShieldCheck, Loader2 } from 'lucide-react';
+import { LogIn, LogOut, UserCircle, Briefcase, ShieldCheck, Loader2, Mail, KeyRound } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 export default function AccountPage() {
@@ -64,6 +64,29 @@ function AccountInner() {
     }
     setBusy(false);
     refresh();
+  }
+
+  async function sendMagicLink() {
+    if (!form.email) { setMsg('Escribe tu correo primero'); return; }
+    setBusy(true); setMsg(null);
+    const { error } = await supabase.auth.signInWithOtp({
+      email: form.email,
+      options: { emailRedirectTo: `${window.location.origin}/cuenta` },
+    });
+    if (error) setMsg(error.message);
+    else setMsg('✉️ Revisa tu correo y pulsa el enlace para entrar.');
+    setBusy(false);
+  }
+
+  async function sendPasswordReset() {
+    if (!form.email) { setMsg('Escribe tu correo primero'); return; }
+    setBusy(true); setMsg(null);
+    const { error } = await supabase.auth.resetPasswordForEmail(form.email, {
+      redirectTo: `${window.location.origin}/cuenta`,
+    });
+    if (error) setMsg(error.message);
+    else setMsg('🔑 Te enviamos un correo para restablecer tu contraseña.');
+    setBusy(false);
   }
 
   async function signOut() {
@@ -179,6 +202,34 @@ function AccountInner() {
       >
         {mode === 'signin' ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia sesión'}
       </button>
+
+      <div className="my-4 flex items-center gap-2 text-xs text-slate-400">
+        <div className="h-px bg-slate-200 flex-1" />
+        <span>O entra sin contraseña</span>
+        <div className="h-px bg-slate-200 flex-1" />
+      </div>
+
+      <button
+        type="button"
+        onClick={sendMagicLink}
+        disabled={busy}
+        className="w-full rounded-xl bg-white border border-slate-200 py-3 font-semibold text-slate-700 flex items-center justify-center gap-2 hover:bg-slate-50 disabled:opacity-60"
+      >
+        <Mail className="w-4 h-4 text-fuchsia-600" />
+        Enviarme un enlace mágico al correo
+      </button>
+
+      {mode === 'signin' && (
+        <button
+          type="button"
+          onClick={sendPasswordReset}
+          disabled={busy}
+          className="w-full text-center mt-3 text-xs text-slate-500 hover:text-brand-600 flex items-center justify-center gap-1"
+        >
+          <KeyRound className="w-3 h-3" />
+          ¿Olvidaste tu contraseña?
+        </button>
+      )}
     </div>
   );
 }

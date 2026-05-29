@@ -2,11 +2,11 @@
 import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { Search, MapPin, Loader2, Briefcase, Calendar, Bus, Store } from 'lucide-react';
+import { Search, MapPin, Loader2, Briefcase, Calendar, Bus, Store, Route as RouteIcon } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 type Hit = {
-  type: 'business' | 'professional' | 'event' | 'cooperative';
+  type: 'business' | 'professional' | 'event' | 'cooperative' | 'route';
   id: string;
   slug?: string;
   name: string;
@@ -34,7 +34,14 @@ const TABS: { key: string; label: string; icon: any }[] = [
   { key: 'professional', label: 'Profesionales', icon: Briefcase },
   { key: 'event', label: 'Eventos', icon: Calendar },
   { key: 'cooperative', label: 'Transporte', icon: Bus },
+  { key: 'route', label: 'Rutas', icon: RouteIcon },
 ];
+
+// Escapa caracteres que rompen el filtro `or()` de PostgREST
+function safeSearch(s: string) {
+  // Quita coma, paréntesis, comillas y otros que rompen el parser CSV de or()
+  return s.trim().replace(/[,()'"`]/g, ' ').replace(/\s+/g, ' ');
+}
 
 export default function SearchPage() {
   return (
@@ -63,12 +70,13 @@ function SearchInner() {
   }, [q, tab]);
 
   async function doSearch() {
-    if (!q.trim()) {
+    const clean = safeSearch(q);
+    if (!clean) {
       setHits([]);
       return;
     }
     setLoading(true);
-    const search = `%${q.trim()}%`;
+    const search = `%${clean}%`;
     const results: Hit[] = [];
 
     const tasks: PromiseLike<any>[] = [];
@@ -154,6 +162,31 @@ function SearchInner() {
       );
     }
 
+    if (tab === 'all' || tab === 'route') {
+      tasks.push(
+        supabase
+          .from('tourist_routes')
+          .select('id, slug, name, short_description, description, cover_image, duration_hours, distance_km, color')
+          .eq('is_published', true)
+          .or(`name.ilike.${search},short_description.ilike.${search},description.ilike.${search}`)
+          .limit(10)
+          .then(({ data }) => {
+            (data ?? []).forEach((r: any) =>
+              results.push({
+                type: 'route',
+                id: r.id,
+                slug: r.slug,
+                name: r.name,
+                short: r.short_description ?? r.description,
+                image: r.cover_image,
+                href: `/rutas/${r.slug}`,
+                meta: [r.duration_hours && `${r.duration_hours}h`, r.distance_km && `${r.distance_km} km`].filter(Boolean).join(' · '),
+              })
+            );
+          })
+      );
+    }
+
     if (tab === 'all' || tab === 'cooperative') {
       tasks.push(
         supabase
@@ -232,12 +265,14 @@ function SearchInner() {
     professional: Briefcase,
     event: Calendar,
     cooperative: Bus,
+    route: RouteIcon,
   };
   const typeLabels: Record<string, string> = {
     business: 'Negocio',
     professional: 'Profesional',
     event: 'Evento',
     cooperative: 'Cooperativa',
+    route: 'Ruta turística',
   };
 
   return (

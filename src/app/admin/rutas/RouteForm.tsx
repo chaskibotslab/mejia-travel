@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Save, Plus, Trash2, GripVertical, Loader2, MapPin } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import ImageUpload from '@/components/ImageUpload';
 
 type Stop = {
   id?: string;
@@ -179,12 +180,14 @@ export default function RouteForm({ routeId }: { routeId?: string }) {
         <Field label="Descripción completa">
           <textarea value={route.description} onChange={(e) => update('description', e.target.value)} className="input min-h-[100px]" placeholder="Detalle del recorrido…" />
         </Field>
-        <Field label="URL de imagen de portada">
-          <input value={route.cover_image} onChange={(e) => update('cover_image', e.target.value)} className="input" placeholder="https://..." />
-          {route.cover_image && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={route.cover_image} alt="preview" className="mt-2 w-32 h-20 object-cover rounded-lg" />
-          )}
+        <Field label="Imagen de portada" help="Sube una foto desde tu equipo o pega una URL externa">
+          <ImageUpload
+            value={route.cover_image || null}
+            onChange={(url) => update('cover_image', url || '')}
+            folder="rutas"
+            previewSize="lg"
+            label="Subir foto de la ruta"
+          />
         </Field>
 
         <div className="grid grid-cols-2 gap-3">

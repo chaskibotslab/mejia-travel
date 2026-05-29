@@ -41,7 +41,11 @@ on conflict do nothing;
 
 -- ---------------------------------------------------------------------
 -- EVENTOS PRÓXIMOS / RECURRENTES
+-- Solo se insertan si la tabla está vacía (re-ejecutable sin duplicar)
 -- ---------------------------------------------------------------------
+do $$
+begin
+if not exists (select 1 from public.events limit 1) then
 insert into public.events (title, description, cover_image, starts_at, ends_at, location, latitude, longitude, organizer, contact_phone, category, is_published) values
   (
     'Paseo Procesional del Chagra 2026',
@@ -92,8 +96,9 @@ insert into public.events (title, description, cover_image, starts_at, ends_at, 
     'Mercado Central Machachi',
     -0.5089, -78.5675,
     'Asociación de Hornaderos', '0998765432', 'gastronomia', true
-  )
-on conflict do nothing;
+  );
+end if;
+end $$;
 
 -- ---------------------------------------------------------------------
 -- ATRACTIVOS TURÍSTICOS (como businesses dentro de subcategorías de turismo)
@@ -154,7 +159,8 @@ begin
      'Parque Nacional Cotopaxi',
      -0.6500, -78.5000,
      'https://images.unsplash.com/photo-1454496522488-7a8e488e8606?w=1200&q=80',
-     true, false, true);
+     true, false, true)
+  on conflict (slug) do nothing;
 
   -- AGUAS TERMALES
   insert into public.businesses (category_id, slug, name, description, short_description, address, latitude, longitude, phone, cover_image, is_published, is_featured, is_verified) values
@@ -174,7 +180,8 @@ begin
      -0.5180, -78.5750,
      '022315678',
      'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=1200&q=80',
-     true, true, true);
+     true, true, true)
+  on conflict (slug) do nothing;
 
   -- IGLESIAS Y PATRIMONIO
   insert into public.businesses (category_id, slug, name, description, short_description, address, latitude, longitude, cover_image, is_published, is_featured, is_verified) values
@@ -184,7 +191,8 @@ begin
      'Plaza Central, Machachi',
      -0.5081, -78.5680,
      'https://images.unsplash.com/photo-1548276145-69a9521f0499?w=1200&q=80',
-     true, true, true);
+     true, true, true)
+  on conflict (slug) do nothing;
 
   -- MIRADORES
   insert into public.businesses (category_id, slug, name, description, short_description, address, latitude, longitude, cover_image, is_published, is_featured, is_verified) values
@@ -194,7 +202,8 @@ begin
      'Loma de Aloasí',
      -0.5150, -78.5900,
      'https://images.unsplash.com/photo-1469041797191-50ace28483c3?w=1200&q=80',
-     true, true, true);
+     true, true, true)
+  on conflict (slug) do nothing;
 
   -- PARQUES
   insert into public.businesses (category_id, slug, name, description, short_description, address, latitude, longitude, cover_image, is_published, is_featured, is_verified) values
@@ -204,7 +213,8 @@ begin
      'Plaza Central, Machachi',
      -0.5081, -78.5680,
      'https://images.unsplash.com/photo-1519331379826-f10be5486c6f?w=1200&q=80',
-     true, false, true);
+     true, false, true)
+  on conflict (slug) do nothing;
 
   -- COMIDA TÍPICA (HUECAS DESTACADAS)
   insert into public.businesses (category_id, slug, name, description, short_description, address, phone, whatsapp, latitude, longitude, cover_image, is_published, is_featured, is_verified) values
@@ -224,7 +234,8 @@ begin
      '0987654321', '593987654322',
      -0.5089, -78.5675,
      'https://images.unsplash.com/photo-1547592180-85f173990554?w=1200&q=80',
-     true, true, true);
+     true, true, true)
+  on conflict (slug) do nothing;
 
   -- HOTELES Y HOSTERÍAS
   insert into public.businesses (category_id, slug, name, description, short_description, address, phone, whatsapp, latitude, longitude, cover_image, is_published, is_featured, is_verified) values
@@ -244,31 +255,32 @@ begin
      '032719052', '593987654324',
      -0.7800, -78.6200,
      'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=1200&q=80',
-     true, true, true);
+     true, true, true)
+  on conflict (slug) do nothing;
 end $$;
 
 -- ---------------------------------------------------------------------
 -- COOPERATIVAS DE TRANSPORTE (con rutas)
 -- ---------------------------------------------------------------------
 insert into public.transport_cooperatives (slug, name, type, description, founded_year, color, phone, whatsapp, address, is_published, is_featured) values
-  ('coop-mejia', 'Cooperativa Mejía',
+  ('coop-mejia', 'Cooperativa Mejía', 'bus',
    'Cooperativa de transporte interprovincial e interparroquial. Sirve a las comunidades del cantón Mejía con buses cómodos y seguros desde 1965.',
    1965, '#1B97A3', '022315700', '593987100200',
    'Terminal Terrestre Machachi',
    true, true),
-  ('coop-rumiñahui', 'Cooperativa Rumiñahui',
+  ('coop-rumiñahui', 'Cooperativa Rumiñahui', 'bus',
    'Transporte interprovincial Quito - Machachi - Latacunga. Frecuencias cada 10 minutos en horas pico.',
    1972, '#3B2EAD', '022316800', '593987100201',
    'Terminal Quitumbe, Quito',
    true, true),
-  ('coop-taxis-machachi', 'Cooperativa de Taxis Machachi',
+  ('coop-taxis-machachi', 'Cooperativa de Taxis Machachi', 'taxi',
    'Servicio de taxi 24/7 en todo el cantón Mejía. Tarifas justas, conductores capacitados y unidades nuevas.',
    1995, '#F39C3E', '022315500', '593987100202',
    'Plaza Central Machachi',
    true, false)
 on conflict (slug) do nothing;
 
--- Rutas de Coop Mejía
+-- Rutas de Coop Mejía (solo si no existen ya rutas para esa coop)
 with c as (select id from public.transport_cooperatives where slug = 'coop-mejia')
 insert into public.transport_routes (cooperative_id, origin, destination, schedule_start, schedule_end, frequency, fare, sort_order)
 select c.id, v.o, v.d, v.s, v.e, v.f, v.p, v.ord from c,
@@ -277,7 +289,8 @@ select c.id, v.o, v.d, v.s, v.e, v.f, v.p, v.ord from c,
   ('Machachi', 'Aloasí',        '05:00', '20:00', 'Cada 15 minutos', 0.35, 2),
   ('Machachi', 'El Chaupi',     '06:00', '19:00', 'Cada 30 minutos', 0.50, 3),
   ('Machachi', 'Cutuglagua',    '05:30', '20:30', 'Cada 20 minutos', 0.40, 4)
-) as v(o,d,s,e,f,p,ord);
+) as v(o,d,s,e,f,p,ord)
+where not exists (select 1 from public.transport_routes tr where tr.cooperative_id = c.id);
 
 -- Rutas de Coop Rumiñahui
 with c as (select id from public.transport_cooperatives where slug = 'coop-rumiñahui')
@@ -287,7 +300,8 @@ select c.id, v.o, v.d, v.s, v.e, v.f, v.p, v.ord from c,
   ('Quito',     'Machachi',  '04:00', '22:00', 'Cada 10 minutos', 0.90, 1),
   ('Machachi',  'Latacunga', '05:00', '20:00', 'Cada 20 minutos', 1.50, 2),
   ('Machachi',  'Ambato',    '06:00', '19:00', 'Cada 1 hora',     2.50, 3)
-) as v(o,d,s,e,f,p,ord);
+) as v(o,d,s,e,f,p,ord)
+where not exists (select 1 from public.transport_routes tr where tr.cooperative_id = c.id);
 
 -- ---------------------------------------------------------------------
 -- PROFESIONALES DE EJEMPLO
@@ -320,7 +334,8 @@ begin
     (cat_elec, 'José Quishpe', 'Electricista Calificado',
      'Instalaciones eléctricas residenciales e industriales. Mantenimiento, reparaciones de emergencia 24/7.',
      null, '593987444444',
-     'Disponible en todo Mejía', true, true);
+     'Disponible en todo Mejía', true, true)
+  on conflict do nothing;
 end $$;
 
 -- ---------------------------------------------------------------------
