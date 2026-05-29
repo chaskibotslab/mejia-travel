@@ -33,8 +33,17 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  const supabaseAnon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
   return (
     <html lang="es" className={inter.variable}>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.__SUPABASE_URL__=${JSON.stringify(supabaseUrl)};window.__SUPABASE_ANON__=${JSON.stringify(supabaseAnon)};`,
+          }}
+        />
+      </head>
       <body className="min-h-screen bg-slate-50 text-slate-900">
         <TopBar />
         <main className="pb-24 max-w-md mx-auto sm:max-w-lg md:max-w-2xl lg:max-w-4xl px-4 pt-4">
