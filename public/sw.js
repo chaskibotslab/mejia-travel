@@ -1,6 +1,8 @@
-// Service worker mínimo para PWA instalable + offline básico
-const CACHE = 'mtravel-v1';
-const ASSETS = ['/', '/manifest.json'];
+// Service worker para PWA — v3
+// IMPORTANTE: NO cacheamos HTML porque el HTML inyecta las env vars de Supabase
+// en runtime. Si cacheamos HTML, el cliente queda con vars viejas.
+const CACHE = 'mtravel-v3';
+const ASSETS = ['/manifest.json'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)));
@@ -21,6 +23,16 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
   if (!request.url.startsWith(self.location.origin)) return;
 
+  const url = new URL(request.url);
+  const isHTML = request.mode === 'navigate' || request.destination === 'document' ||
+                 (request.headers.get('accept') || '').includes('text/html');
+  // Nunca cachear HTML ni rutas de Next.js dinámicas; siempre traer del servidor
+  if (isHTML || url.pathname.startsWith('/_next/data') || url.pathname.startsWith('/api')) {
+    event.respondWith(fetch(request));
+    return;
+  }
+
+  // Cache-first para assets estáticos (imágenes, JS, CSS)
   event.respondWith(
     fetch(request)
       .then((res) => {
@@ -28,6 +40,6 @@ self.addEventListener('fetch', (event) => {
         caches.open(CACHE).then((c) => c.put(request, copy)).catch(() => {});
         return res;
       })
-      .catch(() => caches.match(request).then((m) => m || caches.match('/')))
+      .catch(() => caches.match(request))
   );
 });
