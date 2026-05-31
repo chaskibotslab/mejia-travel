@@ -1,14 +1,14 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Calendar, Search, MapPin, User } from 'lucide-react';
+import { Home, Calendar, Search, Store, User } from 'lucide-react';
 
 const left = [
   { href: '/', label: 'Inicio', icon: Home },
   { href: '/eventos', label: 'Eventos', icon: Calendar },
 ];
 const right = [
-  { href: '/mapa', label: 'Mapa', icon: MapPin },
+  { href: '/mercado', label: 'Mercado', icon: Store },
   { href: '/cuenta', label: 'Perfil', icon: User },
 ];
 
