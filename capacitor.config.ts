@@ -21,7 +21,7 @@ const config: CapacitorConfig = {
   webDir: 'public',
   server: {
     // URL pública de la app — cámbiala por tu dominio cuando esté listo.
-    url: 'https://mejia-travel-production.up.railway.app',
+    url: 'https://mejia.chaskibots.com',
     cleartext: false,
     androidScheme: 'https',
   },
