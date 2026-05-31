@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Upload, Loader2, MapPin } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import CategoryPicker from '@/components/CategoryPicker';
 
 const empty = {
   name: '',
@@ -141,14 +142,12 @@ export default function BusinessForm({ businessId }: { businessId?: string }) {
         <input required value={form.name} onChange={(e) => set('name', e.target.value)} className="inp" />
       </F>
       <F label="Categoría *">
-        <select required value={form.category_id} onChange={(e) => set('category_id', e.target.value)} className="inp">
-          <option value="">Selecciona…</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.parent_id ? '— ' : ''}{c.name_es}
-            </option>
-          ))}
-        </select>
+        <CategoryPicker
+          value={form.category_id}
+          onChange={(id) => set('category_id', id)}
+          options={categories}
+          required
+        />
       </F>
       <F label="Descripción corta">
         <input maxLength={140} value={form.short_description} onChange={(e) => set('short_description', e.target.value)} className="inp" />

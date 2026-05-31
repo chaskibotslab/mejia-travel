@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Plus, Pencil, Trash2, Loader2, X, Star } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import ImageUpload from '@/components/ImageUpload';
+import CategoryPicker from '@/components/CategoryPicker';
 import type { Professional, Category } from '@/lib/types';
 
 export default function AdminProfessionalsPage() {
@@ -65,10 +66,14 @@ export default function AdminProfessionalsPage() {
         </button>
       </div>
 
-      <select value={filter} onChange={(e) => setFilter(e.target.value)} className="w-full mb-3 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm">
-        <option value="">Todas las categorías</option>
-        {cats.map((c) => <option key={c.id} value={c.id}>{c.name_es}</option>)}
-      </select>
+      <div className="mb-3">
+        <CategoryPicker
+          value={filter}
+          onChange={(id) => setFilter(id)}
+          options={cats as any}
+          placeholder="Todas las categorías"
+        />
+      </div>
 
       {loading ? (
         <Loader2 className="w-5 h-5 animate-spin mx-auto mt-6" />
@@ -111,10 +116,12 @@ export default function AdminProfessionalsPage() {
             <input value={editing.full_name ?? ''} onChange={(e) => setEditing({ ...editing, full_name: e.target.value })} className="inp" />
           </Field>
           <Field label="Categoría *">
-            <select value={editing.category_id ?? ''} onChange={(e) => setEditing({ ...editing, category_id: e.target.value })} className="inp">
-              <option value="">— Selecciona —</option>
-              {cats.map((c) => <option key={c.id} value={c.id}>{c.name_es}</option>)}
-            </select>
+            <CategoryPicker
+              value={editing.category_id ?? ''}
+              onChange={(id) => setEditing({ ...editing, category_id: id })}
+              options={cats as any}
+              required
+            />
           </Field>
           <Field label="Profesión / especialidad">
             <input value={editing.profession ?? ''} onChange={(e) => setEditing({ ...editing, profession: e.target.value })} className="inp" />
