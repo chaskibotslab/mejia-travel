@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { Phone, MessageCircle, MapPin, Bus } from 'lucide-react';
+import { Phone, MessageCircle, MapPin, Bus, Clock } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { telLink, waLink, mapLink } from '@/lib/utils';
 import type { TransportCooperative, TransportRoute } from '@/lib/types';
@@ -48,6 +48,18 @@ export default async function CoopPage({ params }: { params: { slug: string } })
 
       <div className="px-4 pt-4 space-y-4">
         {c.description && <p className="text-slate-700 text-sm">{c.description}</p>}
+
+        {c.schedule_general && (
+          <div className="rounded-2xl bg-amber-50 border border-amber-200 p-3">
+            <div className="flex items-start gap-2">
+              <Clock className="w-4 h-4 text-amber-700 mt-0.5 shrink-0" />
+              <div>
+                <p className="font-semibold text-amber-900 text-sm">Horario de atención</p>
+                <p className="text-sm text-amber-800 whitespace-pre-line">{c.schedule_general}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <section>
           <h2 className="font-bold text-slate-800 mb-2 flex items-center gap-1">

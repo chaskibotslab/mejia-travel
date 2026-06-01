@@ -101,6 +101,15 @@ export default function AdminCoopsPage() {
           </div>
           <Field label="Email"><input type="email" value={editing.email ?? ''} onChange={(e) => setEditing({ ...editing, email: e.target.value })} className="inp" /></Field>
           <Field label="Dirección"><input value={editing.address ?? ''} onChange={(e) => setEditing({ ...editing, address: e.target.value })} className="inp" /></Field>
+          <Field label="Horario de atención (oficina/boletería)">
+            <textarea
+              rows={2}
+              value={editing.schedule_general ?? ''}
+              onChange={(e) => setEditing({ ...editing, schedule_general: e.target.value })}
+              className="inp resize-none"
+              placeholder="Lunes a Viernes 06:00–20:00&#10;Sábados 06:00–14:00&#10;Domingos cerrado"
+            />
+          </Field>
           <div className="grid grid-cols-2 gap-2">
             <Field label="Latitud"><input type="number" step="0.0000001" value={editing.latitude ?? ''} onChange={(e) => setEditing({ ...editing, latitude: e.target.value ? Number(e.target.value) : null })} className="inp" /></Field>
             <Field label="Longitud"><input type="number" step="0.0000001" value={editing.longitude ?? ''} onChange={(e) => setEditing({ ...editing, longitude: e.target.value ? Number(e.target.value) : null })} className="inp" /></Field>

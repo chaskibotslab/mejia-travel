@@ -57,6 +57,7 @@ export type TransportCooperative = {
   address: string | null;
   latitude: number | null;
   longitude: number | null;
+  schedule_general: string | null;
   is_published: boolean;
   is_featured: boolean;
   sort_order: number;
