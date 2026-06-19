@@ -82,7 +82,7 @@ function AccountInner() {
     if (!form.email) { setMsg('Escribe tu correo primero'); return; }
     setBusy(true); setMsg(null);
     const { error } = await supabase.auth.resetPasswordForEmail(form.email, {
-      redirectTo: `${window.location.origin}/cuenta`,
+      redirectTo: `${window.location.origin}/auth/reset-password`,
     });
     if (error) setMsg(error.message);
     else setMsg('🔑 Te enviamos un correo para restablecer tu contraseña.');

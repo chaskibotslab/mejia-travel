@@ -14,8 +14,8 @@ create table if not exists public.admin_whitelist (
 
 -- ➡  CAMBIA estos emails por los tuyos:
 insert into public.admin_whitelist (email, notes) values
-  ('tu-email-principal@gmail.com', 'Administrador principal'),
-  ('respaldo@gmail.com',           'Backup admin')
+  ('chaskibots.ia@gmail.com', 'Administrador principal'),
+  ('chaskibots@gmail.com',           'Backup admin')
 on conflict (email) do nothing;
 
 -- 2. Función que valida si un email puede ser admin

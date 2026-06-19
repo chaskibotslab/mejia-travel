@@ -58,6 +58,15 @@ export default function PublishItemPage() {
       return;
     }
     setLoading(true);
+    // Leer la duración configurada por admin (en horas), default 48h
+    const { data: setting } = await supabase
+      .from('app_settings')
+      .select('value')
+      .eq('key', 'marketplace_default_hours')
+      .maybeSingle();
+    const hours = setting?.value ? Number(setting.value) : 48;
+    const expires_at = new Date(Date.now() + hours * 3600 * 1000).toISOString();
+
     const { data, error } = await supabase
       .from('marketplace_items')
       .insert({
@@ -71,6 +80,7 @@ export default function PublishItemPage() {
         whatsapp: form.whatsapp || null,
         location: form.location || null,
         images: form.images,
+        expires_at,
       })
       .select('id')
       .single();
