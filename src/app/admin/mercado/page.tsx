@@ -97,7 +97,7 @@ export default function AdminMarketplacePage() {
       </div>
 
       <button onClick={cleanup} className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-semibold">
-        <Trash className="w-4 h-4" /> Limpiar expirados (>7 días) y vendidos (>30 días)
+        <Trash className="w-4 h-4" /> Limpiar expirados (+7 días) y vendidos (+30 días)
       </button>
 
       {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto mt-6" /> : items.length === 0 ? (
