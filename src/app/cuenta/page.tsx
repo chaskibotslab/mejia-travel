@@ -28,6 +28,11 @@ function AccountInner() {
   const [busy, setBusy] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
   const [msg, setMsg] = useState<string | null>(authError ? `⚠️ ${authError}` : null);
+  // Recovery con OTP (código de 6 dígitos por correo, sin links)
+  const [recoveryOpen, setRecoveryOpen] = useState(false);
+  const [recoverySent, setRecoverySent] = useState(false);
+  const [recovery, setRecovery] = useState({ token: '', newPassword: '', confirm: '' });
+  const [showRecoveryPwd, setShowRecoveryPwd] = useState(false);
 
   useEffect(() => {
     refresh();
@@ -89,15 +94,40 @@ function AccountInner() {
     setBusy(false);
   }
 
-  async function sendPasswordReset() {
+  // Paso 1: envía un código OTP de 6 dígitos al correo del usuario
+  async function sendRecoveryCode() {
     if (!form.email) { setMsg('Escribe tu correo primero'); return; }
     setBusy(true); setMsg(null);
-    const { error } = await supabase.auth.resetPasswordForEmail(form.email, {
-      redirectTo: `${window.location.origin}/auth/callback?next=/auth/reset-password`,
-    });
-    if (error) setMsg(error.message);
-    else setMsg('🔑 Te enviamos un correo para restablecer tu contraseña.');
+    const { error } = await supabase.auth.resetPasswordForEmail(form.email);
     setBusy(false);
+    if (error) { setMsg(error.message); return; }
+    setRecoverySent(true);
+    setMsg('🔑 Te enviamos un código de 6 dígitos a tu correo. Funciona desde cualquier dispositivo.');
+  }
+
+  // Paso 2: valida el código y cambia la contraseña
+  async function verifyRecoveryAndChange(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.email) { setMsg('Falta el correo'); return; }
+    if (!recovery.token || recovery.token.length < 6) { setMsg('Ingresa el código de 6 dígitos'); return; }
+    if (recovery.newPassword.length < 6) { setMsg('La nueva contraseña debe tener al menos 6 caracteres'); return; }
+    if (recovery.newPassword !== recovery.confirm) { setMsg('Las contraseñas no coinciden'); return; }
+    setBusy(true); setMsg(null);
+    const { error: vErr } = await supabase.auth.verifyOtp({
+      email: form.email,
+      token: recovery.token.trim(),
+      type: 'recovery',
+    });
+    if (vErr) { setBusy(false); setMsg('Código incorrecto o expirado: ' + vErr.message); return; }
+    const { error: uErr } = await supabase.auth.updateUser({ password: recovery.newPassword });
+    setBusy(false);
+    if (uErr) { setMsg('No se pudo cambiar la contraseña: ' + uErr.message); return; }
+    setRecoveryOpen(false);
+    setRecoverySent(false);
+    setRecovery({ token: '', newPassword: '', confirm: '' });
+    setMsg('✅ Contraseña cambiada. Te llevamos a tu cuenta…');
+    setTimeout(() => router.push(redirect), 1200);
+    refresh();
   }
 
   async function signOut() {
@@ -241,16 +271,106 @@ function AccountInner() {
         Enviarme un enlace mágico al correo
       </button>
 
-      {mode === 'signin' && (
+      {mode === 'signin' && !recoveryOpen && (
         <button
           type="button"
-          onClick={sendPasswordReset}
+          onClick={() => { setRecoveryOpen(true); setMsg(null); }}
           disabled={busy}
           className="w-full text-center mt-3 text-xs text-slate-500 hover:text-brand-600 flex items-center justify-center gap-1"
         >
           <KeyRound className="w-3 h-3" />
           ¿Olvidaste tu contraseña?
         </button>
+      )}
+
+      {recoveryOpen && (
+        <div className="mt-5 rounded-2xl border border-fuchsia-200 bg-fuchsia-50/40 p-4">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="font-bold text-sm flex items-center gap-2"><KeyRound className="w-4 h-4 text-fuchsia-600" /> Recuperar contraseña</h2>
+            <button
+              type="button"
+              onClick={() => { setRecoveryOpen(false); setRecoverySent(false); setRecovery({ token: '', newPassword: '', confirm: '' }); setMsg(null); }}
+              className="text-xs text-slate-500 hover:text-slate-700"
+            >
+              Cancelar
+            </button>
+          </div>
+
+          {!recoverySent ? (
+            <>
+              <p className="text-xs text-slate-600 mb-3">
+                Escribe tu correo arriba y pulsa <b>Enviar código</b>. Te llegará un código de 6 dígitos
+                que podrás ingresar desde <b>cualquier dispositivo</b>.
+              </p>
+              <button
+                type="button"
+                onClick={sendRecoveryCode}
+                disabled={busy || !form.email}
+                className="w-full rounded-xl bg-fuchsia-600 text-white py-2.5 font-semibold disabled:opacity-60 text-sm"
+              >
+                {busy ? 'Enviando…' : 'Enviar código a mi correo'}
+              </button>
+            </>
+          ) : (
+            <form onSubmit={verifyRecoveryAndChange} className="space-y-2.5">
+              <p className="text-xs text-slate-600">
+                Ingresa el código de 6 dígitos que recibiste en <b>{form.email}</b> y tu nueva contraseña.
+              </p>
+              <input
+                required
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                placeholder="Código de 6 dígitos"
+                value={recovery.token}
+                onChange={(e) => setRecovery({ ...recovery, token: e.target.value.replace(/\D/g, '').slice(0, 6) })}
+                className="w-full rounded-xl border border-slate-200 px-3 py-2.5 bg-white text-sm tracking-widest text-center font-mono"
+              />
+              <div className="relative">
+                <input
+                  required
+                  type={showRecoveryPwd ? 'text' : 'password'}
+                  placeholder="Nueva contraseña (mín. 6)"
+                  minLength={6}
+                  value={recovery.newPassword}
+                  onChange={(e) => setRecovery({ ...recovery, newPassword: e.target.value })}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2.5 pr-10 bg-white text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowRecoveryPwd((v) => !v)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 p-1"
+                  aria-label="Ver contraseña"
+                >
+                  {showRecoveryPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              <input
+                required
+                type={showRecoveryPwd ? 'text' : 'password'}
+                placeholder="Confirmar contraseña"
+                minLength={6}
+                value={recovery.confirm}
+                onChange={(e) => setRecovery({ ...recovery, confirm: e.target.value })}
+                className="w-full rounded-xl border border-slate-200 px-3 py-2.5 bg-white text-sm"
+              />
+              <button
+                type="submit"
+                disabled={busy}
+                className="w-full rounded-xl bg-fuchsia-600 text-white py-2.5 font-semibold disabled:opacity-60 text-sm"
+              >
+                {busy ? 'Verificando…' : 'Cambiar contraseña'}
+              </button>
+              <button
+                type="button"
+                onClick={sendRecoveryCode}
+                disabled={busy}
+                className="w-full text-xs text-fuchsia-700 underline"
+              >
+                Reenviar código
+              </button>
+            </form>
+          )}
+        </div>
       )}
     </div>
   );
