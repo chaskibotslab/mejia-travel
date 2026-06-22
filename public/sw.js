@@ -1,7 +1,7 @@
-// Service worker para PWA — v3
+// Service worker para PWA — v4
 // IMPORTANTE: NO cacheamos HTML porque el HTML inyecta las env vars de Supabase
 // en runtime. Si cacheamos HTML, el cliente queda con vars viejas.
-const CACHE = 'mtravel-v3';
+const CACHE = 'mtravel-v4';
 const ASSETS = ['/manifest.json'];
 
 self.addEventListener('install', (event) => {

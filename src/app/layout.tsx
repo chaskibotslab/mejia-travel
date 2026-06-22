@@ -8,6 +8,10 @@ import AIAssistant from '@/components/AIAssistant';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
+// Evita que Next.js cachee el HTML como estático: necesitamos que cada request
+// re-lea las env vars de Supabase para inyectarlas frescas en el <head>.
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Mejía Travel — Todo lo que buscas en el Cantón Mejía',
   description:
