@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Trash2, Check, Loader2, RefreshCw } from 'lucide-react';
+import { Trash2, Check, Loader2, RefreshCw, Pencil } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { timeLeft } from '@/lib/utils';
 
@@ -48,7 +48,7 @@ export default function MyItemsPage() {
       .select('value')
       .eq('key', 'marketplace_default_hours')
       .maybeSingle();
-    const hours = setting?.value ? Number(setting.value) : 48;
+    const hours = setting?.value ? Number(setting.value) : 720;
     const expires_at = new Date(Date.now() + hours * 3600 * 1000).toISOString();
     const { error } = await supabase
       .from('marketplace_items')
@@ -87,17 +87,20 @@ export default function MyItemsPage() {
                   </p>
                 </div>
                 <div className="flex flex-col gap-1">
+                  <Link href={`/mercado/publicar?id=${it.id}`} className="p-1.5 rounded bg-blue-50 text-blue-600" aria-label="Editar" title="Editar">
+                    <Pencil className="w-4 h-4" />
+                  </Link>
                   {(it.is_sold || expired) && (
                     <button onClick={() => republish(it.id)} className="p-1.5 rounded bg-fuchsia-50 text-fuchsia-600" aria-label="Republicar" title="Volver a publicar">
                       <RefreshCw className="w-4 h-4" />
                     </button>
                   )}
                   {!it.is_sold && !expired && (
-                    <button onClick={() => markSold(it.id)} className="p-1.5 rounded bg-emerald-50 text-emerald-600" aria-label="Marcar vendido">
+                    <button onClick={() => markSold(it.id)} className="p-1.5 rounded bg-emerald-50 text-emerald-600" aria-label="Marcar vendido" title="Marcar vendido">
                       <Check className="w-4 h-4" />
                     </button>
                   )}
-                  <button onClick={() => del(it.id)} className="p-1.5 rounded bg-red-50 text-red-600" aria-label="Eliminar">
+                  <button onClick={() => del(it.id)} className="p-1.5 rounded bg-red-50 text-red-600" aria-label="Eliminar" title="Eliminar">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>

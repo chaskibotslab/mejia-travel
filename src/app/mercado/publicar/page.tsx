@@ -1,17 +1,28 @@
 'use client';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Upload, Loader2 } from 'lucide-react';
+import { Suspense, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Upload, Loader2, Trash2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 const CATEGORIES = ['Vehículos', 'Hogar', 'Animales', 'Agricultura', 'Electrónica', 'Ropa', 'Otros'];
 
 export default function PublishItemPage() {
+  return (
+    <Suspense fallback={<div className="px-4 pt-10 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto text-slate-400" /></div>}>
+      <PublishItemInner />
+    </Suspense>
+  );
+}
+
+function PublishItemInner() {
   const supabase = createClient();
   const router = useRouter();
+  const params = useSearchParams();
+  const editId = params.get('id');
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [defaultHours, setDefaultHours] = useState(720); // 30 días por defecto
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -25,15 +36,44 @@ export default function PublishItemPage() {
   });
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
+    (async () => {
+      const { data } = await supabase.auth.getUser();
       if (!data.user) {
-        router.push('/cuenta?redirect=/mercado/publicar');
-      } else {
-        setUser(data.user);
+        router.push(`/cuenta?redirect=/mercado/publicar${editId ? `?id=${editId}` : ''}`);
+        return;
       }
-    });
+      setUser(data.user);
+
+      const { data: setting } = await supabase
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'marketplace_default_hours')
+        .maybeSingle();
+      if (setting?.value) setDefaultHours(Number(setting.value));
+
+      if (editId) {
+        const { data: it } = await supabase
+          .from('marketplace_items')
+          .select('*')
+          .eq('id', editId)
+          .eq('user_id', data.user.id)
+          .maybeSingle();
+        if (!it) { alert('No encontramos esa publicación o no es tuya.'); router.push('/cuenta/mis-articulos'); return; }
+        setForm({
+          title: it.title || '',
+          description: it.description || '',
+          price: it.price?.toString() || '',
+          category: it.category || 'Otros',
+          condition: it.condition || 'usado',
+          phone: it.phone || '',
+          whatsapp: it.whatsapp || '',
+          location: it.location || 'Machachi',
+          images: it.images || [],
+        });
+      }
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [editId]);
 
   async function uploadImage(file: File) {
     setUploading(true);
@@ -50,6 +90,10 @@ export default function PublishItemPage() {
     setUploading(false);
   }
 
+  function removeImage(idx: number) {
+    setForm((f) => ({ ...f, images: f.images.filter((_, i) => i !== idx) }));
+  }
+
   async function submit(e: any) {
     e.preventDefault();
     if (!user) return;
@@ -58,44 +102,56 @@ export default function PublishItemPage() {
       return;
     }
     setLoading(true);
-    // Leer la duración configurada por admin (en horas), default 48h
-    const { data: setting } = await supabase
-      .from('app_settings')
-      .select('value')
-      .eq('key', 'marketplace_default_hours')
-      .maybeSingle();
-    const hours = setting?.value ? Number(setting.value) : 48;
-    const expires_at = new Date(Date.now() + hours * 3600 * 1000).toISOString();
 
+    const payload = {
+      title: form.title,
+      description: form.description || null,
+      price: Number(form.price),
+      category: form.category,
+      condition: form.condition,
+      phone: form.phone || null,
+      whatsapp: form.whatsapp || null,
+      location: form.location || null,
+      images: form.images,
+    };
+
+    if (editId) {
+      // Modo edición: NO tocamos expires_at ni user_id
+      const { error } = await supabase
+        .from('marketplace_items')
+        .update(payload)
+        .eq('id', editId)
+        .eq('user_id', user.id);
+      setLoading(false);
+      if (error) { alert(error.message); return; }
+      router.push(`/mercado/${editId}`);
+      return;
+    }
+
+    // Modo creación: aplica expires_at con la duración configurada
+    const expires_at = new Date(Date.now() + defaultHours * 3600 * 1000).toISOString();
     const { data, error } = await supabase
       .from('marketplace_items')
-      .insert({
-        user_id: user.id,
-        title: form.title,
-        description: form.description || null,
-        price: Number(form.price),
-        category: form.category,
-        condition: form.condition,
-        phone: form.phone || null,
-        whatsapp: form.whatsapp || null,
-        location: form.location || null,
-        images: form.images,
-        expires_at,
-      })
+      .insert({ ...payload, user_id: user.id, expires_at })
       .select('id')
       .single();
     setLoading(false);
-    if (error) {
-      alert(error.message);
-      return;
-    }
+    if (error) { alert(error.message); return; }
     router.push(`/mercado/${data!.id}`);
   }
 
+  const durationText = defaultHours >= 24
+    ? `${Math.round(defaultHours / 24)} días`
+    : `${defaultHours} horas`;
+
   return (
     <form onSubmit={submit} className="px-4 pt-4 fade-in space-y-3">
-      <h1 className="text-xl font-bold mb-2">Publicar artículo</h1>
-      <p className="text-xs text-slate-500 -mt-2">Tu publicación será visible por 48 horas.</p>
+      <h1 className="text-xl font-bold mb-2">{editId ? 'Editar publicación' : 'Publicar artículo'}</h1>
+      <p className="text-xs text-slate-500 -mt-2">
+        {editId
+          ? 'Edita los datos. La fecha de vencimiento se conserva.'
+          : `Tu publicación será visible por ${durationText}.`}
+      </p>
 
       <Field label="Título *">
         <input
@@ -179,8 +235,18 @@ export default function PublishItemPage() {
       <Field label="Fotos">
         <div className="flex gap-2 flex-wrap">
           {form.images.map((url, i) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img key={i} src={url} alt="" className="w-20 h-20 rounded-lg object-cover" />
+            <div key={i} className="relative">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={url} alt="" className="w-20 h-20 rounded-lg object-cover" />
+              <button
+                type="button"
+                onClick={() => removeImage(i)}
+                className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-red-500 text-white grid place-items-center shadow"
+                aria-label="Quitar imagen"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            </div>
           ))}
           <label className="w-20 h-20 rounded-lg border-2 border-dashed border-slate-300 grid place-items-center cursor-pointer hover:bg-slate-50">
             {uploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Upload className="w-5 h-5 text-slate-400" />}
@@ -199,7 +265,7 @@ export default function PublishItemPage() {
         disabled={loading}
         className="w-full rounded-xl bg-brand-600 text-white py-3 font-semibold shadow-card disabled:opacity-60"
       >
-        {loading ? 'Publicando…' : 'Publicar artículo'}
+        {loading ? 'Guardando…' : editId ? 'Guardar cambios' : 'Publicar artículo'}
       </button>
 
       <style jsx>{`
