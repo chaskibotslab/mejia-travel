@@ -102,14 +102,14 @@ function AccountInner() {
     setBusy(false);
     if (error) { setMsg(error.message); return; }
     setRecoverySent(true);
-    setMsg('🔑 Te enviamos un código de 6 dígitos a tu correo. Funciona desde cualquier dispositivo.');
+    setMsg('🔑 Te enviamos un código a tu correo. Funciona desde cualquier dispositivo.');
   }
 
   // Paso 2: valida el código y cambia la contraseña
   async function verifyRecoveryAndChange(e: React.FormEvent) {
     e.preventDefault();
     if (!form.email) { setMsg('Falta el correo'); return; }
-    if (!recovery.token || recovery.token.length < 6) { setMsg('Ingresa el código de 6 dígitos'); return; }
+    if (!recovery.token || recovery.token.length < 6) { setMsg('Ingresa el código que recibiste por correo'); return; }
     if (recovery.newPassword.length < 6) { setMsg('La nueva contraseña debe tener al menos 6 caracteres'); return; }
     if (recovery.newPassword !== recovery.confirm) { setMsg('Las contraseñas no coinciden'); return; }
     setBusy(true); setMsg(null);
@@ -299,7 +299,7 @@ function AccountInner() {
           {!recoverySent ? (
             <>
               <p className="text-xs text-slate-600 mb-3">
-                Escribe tu correo arriba y pulsa <b>Enviar código</b>. Te llegará un código de 6 dígitos
+                Escribe tu correo arriba y pulsa <b>Enviar código</b>. Te llegará un código numérico
                 que podrás ingresar desde <b>cualquier dispositivo</b>.
               </p>
               <button
@@ -314,15 +314,15 @@ function AccountInner() {
           ) : (
             <form onSubmit={verifyRecoveryAndChange} className="space-y-2.5">
               <p className="text-xs text-slate-600">
-                Ingresa el código de 6 dígitos que recibiste en <b>{form.email}</b> y tu nueva contraseña.
+                Ingresa el código que recibiste en <b>{form.email}</b> y tu nueva contraseña.
               </p>
               <input
                 required
                 inputMode="numeric"
                 autoComplete="one-time-code"
-                placeholder="Código de 6 dígitos"
+                placeholder="Código del correo"
                 value={recovery.token}
-                onChange={(e) => setRecovery({ ...recovery, token: e.target.value.replace(/\D/g, '').slice(0, 6) })}
+                onChange={(e) => setRecovery({ ...recovery, token: e.target.value.replace(/\D/g, '').slice(0, 10) })}
                 className="w-full rounded-xl border border-slate-200 px-3 py-2.5 bg-white text-sm tracking-widest text-center font-mono"
               />
               <div className="relative">
