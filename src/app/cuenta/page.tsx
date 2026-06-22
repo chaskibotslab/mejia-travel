@@ -2,7 +2,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { LogIn, LogOut, UserCircle, ShieldCheck, Loader2, Mail, KeyRound, Store, Tag } from 'lucide-react';
+import { LogIn, LogOut, UserCircle, ShieldCheck, Loader2, Mail, KeyRound, Store, Tag, Eye, EyeOff } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 export default function AccountPage() {
@@ -26,6 +26,7 @@ function AccountInner() {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [form, setForm] = useState({ email: '', password: '', full_name: '', phone: '' });
   const [busy, setBusy] = useState(false);
+  const [showPwd, setShowPwd] = useState(false);
   const [msg, setMsg] = useState<string | null>(authError ? `⚠️ ${authError}` : null);
 
   useEffect(() => {
@@ -185,15 +186,25 @@ function AccountInner() {
           onChange={(e) => setForm({ ...form, email: e.target.value })}
           className="w-full rounded-xl border border-slate-200 px-3 py-2.5 bg-white text-sm"
         />
-        <input
-          required
-          type="password"
-          placeholder="Contraseña"
-          minLength={6}
-          value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-          className="w-full rounded-xl border border-slate-200 px-3 py-2.5 bg-white text-sm"
-        />
+        <div className="relative">
+          <input
+            required
+            type={showPwd ? 'text' : 'password'}
+            placeholder="Contraseña"
+            minLength={6}
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 pr-10 bg-white text-sm"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPwd((v) => !v)}
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+            aria-label={showPwd ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+          >
+            {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          </button>
+        </div>
 
         {msg && <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 p-2 rounded-lg">{msg}</p>}
 

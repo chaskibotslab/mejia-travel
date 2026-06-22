@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Trash2, Check, Loader2 } from 'lucide-react';
+import { Trash2, Check, Loader2, RefreshCw } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { timeLeft } from '@/lib/utils';
 
@@ -41,6 +41,23 @@ export default function MyItemsPage() {
     setItems(items.filter((i) => i.id !== id));
   }
 
+  async function republish(id: string) {
+    // Lee la duración configurada por admin (en horas), default 48h
+    const { data: setting } = await supabase
+      .from('app_settings')
+      .select('value')
+      .eq('key', 'marketplace_default_hours')
+      .maybeSingle();
+    const hours = setting?.value ? Number(setting.value) : 48;
+    const expires_at = new Date(Date.now() + hours * 3600 * 1000).toISOString();
+    const { error } = await supabase
+      .from('marketplace_items')
+      .update({ expires_at, is_sold: false })
+      .eq('id', id);
+    if (error) { alert(error.message); return; }
+    setItems(items.map((i) => (i.id === id ? { ...i, expires_at, is_sold: false } : i)));
+  }
+
   if (loading) {
     return <div className="px-4 pt-10 text-center"><Loader2 className="w-6 h-6 animate-spin mx-auto text-slate-400" /></div>;
   }
@@ -70,6 +87,11 @@ export default function MyItemsPage() {
                   </p>
                 </div>
                 <div className="flex flex-col gap-1">
+                  {(it.is_sold || expired) && (
+                    <button onClick={() => republish(it.id)} className="p-1.5 rounded bg-fuchsia-50 text-fuchsia-600" aria-label="Republicar" title="Volver a publicar">
+                      <RefreshCw className="w-4 h-4" />
+                    </button>
+                  )}
                   {!it.is_sold && !expired && (
                     <button onClick={() => markSold(it.id)} className="p-1.5 rounded bg-emerald-50 text-emerald-600" aria-label="Marcar vendido">
                       <Check className="w-4 h-4" />
