@@ -18,6 +18,7 @@ function AccountInner() {
   const router = useRouter();
   const params = useSearchParams();
   const redirect = params.get('redirect') || '/';
+  const authError = params.get('auth_error');
 
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
@@ -25,7 +26,7 @@ function AccountInner() {
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [form, setForm] = useState({ email: '', password: '', full_name: '', phone: '' });
   const [busy, setBusy] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [msg, setMsg] = useState<string | null>(authError ? `⚠️ ${authError}` : null);
 
   useEffect(() => {
     refresh();
@@ -50,7 +51,10 @@ function AccountInner() {
       const { error } = await supabase.auth.signUp({
         email: form.email,
         password: form.password,
-        options: { data: { full_name: form.full_name, phone: form.phone } },
+        options: {
+          data: { full_name: form.full_name, phone: form.phone },
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/cuenta`,
+        },
       });
       if (error) setMsg(error.message);
       else setMsg('Cuenta creada. Revisa tu correo para confirmar.');
@@ -71,7 +75,7 @@ function AccountInner() {
     setBusy(true); setMsg(null);
     const { error } = await supabase.auth.signInWithOtp({
       email: form.email,
-      options: { emailRedirectTo: `${window.location.origin}/cuenta` },
+      options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=/cuenta` },
     });
     if (error) setMsg(error.message);
     else setMsg('✉️ Revisa tu correo y pulsa el enlace para entrar.');
@@ -82,7 +86,7 @@ function AccountInner() {
     if (!form.email) { setMsg('Escribe tu correo primero'); return; }
     setBusy(true); setMsg(null);
     const { error } = await supabase.auth.resetPasswordForEmail(form.email, {
-      redirectTo: `${window.location.origin}/auth/reset-password`,
+      redirectTo: `${window.location.origin}/auth/callback?next=/auth/reset-password`,
     });
     if (error) setMsg(error.message);
     else setMsg('🔑 Te enviamos un correo para restablecer tu contraseña.');
