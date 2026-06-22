@@ -48,7 +48,7 @@ function AccountInner() {
     setBusy(true);
     setMsg(null);
     if (mode === 'signup') {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: form.email,
         password: form.password,
         options: {
@@ -56,8 +56,14 @@ function AccountInner() {
           emailRedirectTo: `${window.location.origin}/auth/callback?next=/cuenta`,
         },
       });
-      if (error) setMsg(error.message);
-      else setMsg('Cuenta creada. Revisa tu correo para confirmar.');
+      if (error) {
+        setMsg(error.message);
+      } else if (data.session) {
+        // Auto-confirm activado: el usuario ya está logueado
+        router.push(redirect);
+      } else {
+        setMsg('✉️ Cuenta creada. Revisa tu correo para confirmar antes de iniciar sesión.');
+      }
     } else {
       const { error } = await supabase.auth.signInWithPassword({
         email: form.email,

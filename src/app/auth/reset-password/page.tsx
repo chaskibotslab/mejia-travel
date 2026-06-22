@@ -26,18 +26,24 @@ export default function ResetPasswordPage() {
   const [done, setDone] = useState(false);
 
   useEffect(() => {
-    // 1) Escuchamos el evento de recovery
+    let cancelled = false;
+    // 1) Escuchamos el evento de recovery / sign-in
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') {
         setHasSession(true);
       }
     });
-    // 2) También revisamos si ya hay sesión (por si llegamos sin evento)
-    supabase.auth.getSession().then(({ data }) => {
-      if (data.session) setHasSession(true);
-      setReady(true);
-    });
-    return () => { sub.subscription.unsubscribe(); };
+    // 2) Sondeamos la sesión durante ~3s por si la cookie tarda en propagarse
+    (async () => {
+      for (let i = 0; i < 6; i++) {
+        const { data } = await supabase.auth.getSession();
+        if (cancelled) return;
+        if (data.session) { setHasSession(true); break; }
+        await new Promise((r) => setTimeout(r, 500));
+      }
+      if (!cancelled) setReady(true);
+    })();
+    return () => { cancelled = true; sub.subscription.unsubscribe(); };
   }, [supabase]);
 
   async function submit(e: React.FormEvent) {
