@@ -20,6 +20,8 @@ function PublishItemInner() {
   const params = useSearchParams();
   const editId = params.get('id');
   const [user, setUser] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [editingOwnerId, setEditingOwnerId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [defaultHours, setDefaultHours] = useState(720); // 30 días por defecto
@@ -44,6 +46,15 @@ function PublishItemInner() {
       }
       setUser(data.user);
 
+      // Verifica si el usuario es admin
+      const { data: prof } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', data.user.id)
+        .maybeSingle();
+      const admin = prof?.role === 'admin';
+      setIsAdmin(admin);
+
       const { data: setting } = await supabase
         .from('app_settings')
         .select('value')
@@ -52,13 +63,12 @@ function PublishItemInner() {
       if (setting?.value) setDefaultHours(Number(setting.value));
 
       if (editId) {
-        const { data: it } = await supabase
-          .from('marketplace_items')
-          .select('*')
-          .eq('id', editId)
-          .eq('user_id', data.user.id)
-          .maybeSingle();
-        if (!it) { alert('No encontramos esa publicación o no es tuya.'); router.push('/cuenta/mis-articulos'); return; }
+        // Admin puede editar cualquier publicación, dueño solo la suya
+        let q = supabase.from('marketplace_items').select('*').eq('id', editId);
+        if (!admin) q = q.eq('user_id', data.user.id);
+        const { data: it } = await q.maybeSingle();
+        if (!it) { alert('No encontramos esa publicación o no tienes permiso para editarla.'); router.push(admin ? '/admin/mercado' : '/cuenta/mis-articulos'); return; }
+        setEditingOwnerId(it.user_id);
         setForm({
           title: it.title || '',
           description: it.description || '',
@@ -116,15 +126,14 @@ function PublishItemInner() {
     };
 
     if (editId) {
-      // Modo edición: NO tocamos expires_at ni user_id
-      const { error } = await supabase
-        .from('marketplace_items')
-        .update(payload)
-        .eq('id', editId)
-        .eq('user_id', user.id);
+      // Modo edición: NO tocamos expires_at ni user_id.
+      // Admin puede actualizar cualquier publicación; dueño solo la suya.
+      let q = supabase.from('marketplace_items').update(payload).eq('id', editId);
+      if (!isAdmin) q = q.eq('user_id', user.id);
+      const { error } = await q;
       setLoading(false);
       if (error) { alert(error.message); return; }
-      router.push(`/mercado/${editId}`);
+      router.push(isAdmin && editingOwnerId !== user.id ? '/admin/mercado' : `/mercado/${editId}`);
       return;
     }
 

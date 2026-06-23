@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Trash2, Loader2, Star, Calendar, Plus, Trash, Settings } from 'lucide-react';
+import { Trash2, Loader2, Star, Calendar, Plus, Trash, Settings, Pencil } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 export default function AdminMarketplacePage() {
@@ -119,10 +119,13 @@ export default function AdminMarketplacePage() {
                     <p className="text-xs text-brand-600 font-bold">{it.currency} {it.price}</p>
                     <span className={`inline-block mt-1 text-[10px] px-1.5 py-0.5 rounded ${st.color}`}>{st.label}</span>
                   </div>
-                  <button onClick={() => toggleFeat(it.id, it.is_featured)} className={`p-2 rounded-lg ${it.is_featured ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500'}`}>
+                  <Link href={`/mercado/publicar?id=${it.id}`} className="p-2 rounded-lg bg-blue-50 text-blue-600" title="Editar publicación">
+                    <Pencil className="w-4 h-4" />
+                  </Link>
+                  <button onClick={() => toggleFeat(it.id, it.is_featured)} className={`p-2 rounded-lg ${it.is_featured ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500'}`} title="Destacar">
                     <Star className="w-4 h-4" />
                   </button>
-                  <button onClick={() => del(it.id)} className="p-2 rounded-lg bg-red-50 text-red-600">
+                  <button onClick={() => del(it.id)} className="p-2 rounded-lg bg-red-50 text-red-600" title="Eliminar">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>

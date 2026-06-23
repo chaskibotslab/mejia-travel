@@ -47,11 +47,14 @@ export default function AdminEventsPage() {
                 <span className="text-xs text-slate-500">{new Date(ev.starts_at).toLocaleDateString()}</span>
               </div>
               {ev.location && <p className="text-xs text-slate-500 mb-2">📍 {ev.location}</p>}
-              <div className="flex gap-1.5">
+              <div className="flex gap-1.5 items-center">
                 <button onClick={() => togglePub(ev.id, ev.is_published)} className={`px-2 py-1 rounded-md text-xs font-medium ${ev.is_published ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'}`}>
                   {ev.is_published ? 'Publicado' : 'Borrador'}
                 </button>
-                <button onClick={() => del(ev.id)} className="px-2 py-1 rounded-md text-xs bg-red-50 text-red-600 ml-auto">
+                <Link href={`/admin/eventos/nuevo?id=${ev.id}`} className="ml-auto px-2 py-1 rounded-md text-xs bg-blue-50 text-blue-600 flex items-center gap-1" title="Editar">
+                  <Pencil className="w-3.5 h-3.5" /> Editar
+                </Link>
+                <button onClick={() => del(ev.id)} className="px-2 py-1 rounded-md text-xs bg-red-50 text-red-600" title="Eliminar">
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
