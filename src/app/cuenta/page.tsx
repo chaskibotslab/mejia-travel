@@ -64,6 +64,11 @@ function AccountInner() {
       });
       if (error) {
         setMsg(error.message);
+      } else if (data.user && (data.user.identities?.length ?? 0) === 0) {
+        // Supabase devuelve éxito silencioso cuando el email YA está registrado
+        // (para evitar enumeración). Detectamos ese caso por identities vacío.
+        setMsg('⚠️ Ese correo ya tiene una cuenta. Inicia sesión o usa "¿Olvidaste tu contraseña?".');
+        setMode('signin');
       } else if (data.session) {
         // Auto-confirm activado: el usuario ya está logueado
         router.push(redirect);

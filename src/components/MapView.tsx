@@ -3,15 +3,19 @@ import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 
-// Fix iconos default en bundlers
-const icon = L.icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
+// Icono custom: SVG con la punta exactamente en el píxel inferior central.
+// Esto garantiza que el pin apunte exactamente a la lat/lng real, sin offsets.
+const icon = L.divIcon({
+  className: 'mejia-map-pin',
+  html: `
+    <svg width="32" height="42" viewBox="0 0 32 42" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 3px 4px rgba(0,0,0,0.35));">
+      <path d="M16 0C7.163 0 0 7.163 0 16c0 11 16 26 16 26s16-15 16-26C32 7.163 24.837 0 16 0z" fill="#2563eb"/>
+      <circle cx="16" cy="16" r="6" fill="white"/>
+    </svg>
+  `,
+  iconSize: [32, 42],
+  iconAnchor: [16, 42],   // punta inferior del pin = ubicación real
+  popupAnchor: [0, -38],
 });
 
 type Props = {

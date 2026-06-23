@@ -83,11 +83,7 @@ export default function AIAssistant() {
 
       {/* Panel del chat */}
       {open && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setOpen(false)}>
-          <div
-            className="bg-white w-full sm:max-w-md sm:rounded-3xl rounded-t-3xl h-[85vh] sm:h-[600px] flex flex-col shadow-2xl animate-slide-up"
-            onClick={(e) => e.stopPropagation()}
-          >
+        <ChatPanel onClose={() => setOpen(false)}>
             {/* Header */}
             <div className="px-4 py-3 border-b border-slate-200 flex items-center gap-3 bg-gradient-to-r from-brand-600 to-accent-500 text-white sm:rounded-t-3xl rounded-t-3xl">
               <div className="w-10 h-10 rounded-full bg-white/20 grid place-items-center backdrop-blur">
@@ -174,8 +170,7 @@ export default function AIAssistant() {
                 <Send className="w-4 h-4" />
               </button>
             </form>
-          </div>
-        </div>
+        </ChatPanel>
       )}
 
       <style jsx>{`
@@ -186,5 +181,61 @@ export default function AIAssistant() {
         .animate-slide-up { animation: slide-up 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
       `}</style>
     </>
+  );
+}
+
+// Panel del chat con soporte swipe-down y swipe-right para cerrar (móvil)
+function ChatPanel({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
+  const [drag, setDrag] = useState<{ x: number; y: number } | null>(null);
+  const [offset, setOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  function onTouchStart(e: React.TouchEvent) {
+    const t = e.touches[0];
+    setDrag({ x: t.clientX, y: t.clientY });
+  }
+  function onTouchMove(e: React.TouchEvent) {
+    if (!drag) return;
+    const t = e.touches[0];
+    const dx = t.clientX - drag.x;
+    const dy = t.clientY - drag.y;
+    // Solo permite arrastrar hacia abajo o hacia la derecha
+    setOffset({ x: Math.max(0, dx), y: Math.max(0, dy) });
+  }
+  function onTouchEnd() {
+    // Si el swipe fue > 120px en cualquier eje, cierra
+    if (offset.x > 120 || offset.y > 120) {
+      onClose();
+    } else {
+      setOffset({ x: 0, y: 0 });
+    }
+    setDrag(null);
+  }
+
+  const opacity = Math.max(0.2, 1 - Math.max(offset.x, offset.y) / 400);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center backdrop-blur-sm"
+      style={{ background: `rgba(0,0,0,${0.5 * opacity})` }}
+      onClick={onClose}
+    >
+      <div
+        className="bg-white w-full sm:max-w-md sm:rounded-3xl rounded-t-3xl h-[85vh] sm:h-[600px] flex flex-col shadow-2xl animate-slide-up touch-pan-y"
+        onClick={(e) => e.stopPropagation()}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        style={{
+          transform: `translate(${offset.x}px, ${offset.y}px)`,
+          transition: drag ? 'none' : 'transform 0.25s cubic-bezier(0.4,0,0.2,1)',
+        }}
+      >
+        {/* Handle visual (barra arriba para indicar drag) */}
+        <div className="sm:hidden flex justify-center pt-2 pb-1">
+          <div className="w-10 h-1.5 rounded-full bg-slate-300" />
+        </div>
+        {children}
+      </div>
+    </div>
   );
 }
