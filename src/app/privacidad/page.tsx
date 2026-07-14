@@ -38,7 +38,7 @@ export default function PrivacyPolicyPage() {
         publicitarios. Solo compartimos datos en los siguientes casos:
       </p>
       <ul>
-        <li>Con proveedores de infraestructura (Supabase para base de datos, Railway para hosting) bajo contratos de confidencialidad.</li>
+        <li>Con proveedores de servicios técnicos que nos ayudan a operar la Aplicación (hosting, base de datos, análisis), bajo estrictos contratos de confidencialidad.</li>
         <li>Cuando la ley lo requiera (orden judicial, requerimiento legal).</li>
         <li>Información que tú decides hacer pública (publicaciones del mercado, reseñas).</li>
       </ul>
@@ -60,7 +60,7 @@ export default function PrivacyPolicyPage() {
       </ul>
       <p>
         Para ejercer estos derechos, escríbenos a{' '}
-        <a href="mailto:contacto@chaskibots.com">contacto@chaskibots.com</a>.
+        <a href="mailto:chaskibots.ia@gmail.com">chaskibots.ia@gmail.com</a>.
       </p>
 
       <h2>6. Retención de datos</h2>
@@ -87,9 +87,10 @@ export default function PrivacyPolicyPage() {
         Si tienes preguntas sobre esta política de privacidad:
       </p>
       <ul>
-        <li><strong>Email:</strong> <a href="mailto:contacto@chaskibots.com">contacto@chaskibots.com</a></li>
+        <li><strong>Email:</strong> <a href="mailto:chaskibots.ia@gmail.com">chaskibots.ia@gmail.com</a></li>
         <li><strong>Empresa:</strong> Chaski Bots Lab</li>
-        <li><strong>Ubicación:</strong> Cantón Mejía, Pichincha, Ecuador</li>
+        <li><strong>Dirección:</strong> Av. 10 de Agosto 30-66, Machachi, Pichincha, Ecuador</li>
+        <li><strong>Teléfono:</strong> <a href="tel:+593968653593">+593 96 865 3593</a></li>
       </ul>
     </div>
   );
