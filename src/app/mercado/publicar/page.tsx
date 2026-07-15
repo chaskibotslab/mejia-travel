@@ -1,5 +1,5 @@
 'use client';
-import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Upload, Loader2, Trash2, ShieldAlert } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
@@ -89,19 +89,31 @@ function PublishItemInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editId]);
 
-  // Load NSFW.js model only when publishing new items (not editing)
+  // Load NSFW.js model from CDN (avoids webpack bundling issues)
   useEffect(() => {
     if (editId) { setNsfwReady(true); return; }
     let cancelled = false;
+
+    function loadScript(src: string): Promise<void> {
+      return new Promise((resolve, reject) => {
+        if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+        const s = document.createElement('script');
+        s.src = src;
+        s.onload = () => resolve();
+        s.onerror = () => reject();
+        document.head.appendChild(s);
+      });
+    }
+
     (async () => {
       try {
-        const nsfwjs = await import('nsfwjs');
-        const tf = await import('@tensorflow/tfjs');
-        await tf.ready();
+        await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.21.0/dist/tf.min.js');
+        await loadScript('https://cdn.jsdelivr.net/npm/nsfwjs@2.4.2/dist/nsfwjs.min.js');
+        const nsfwjs = (window as any).nsfwjs;
+        if (!nsfwjs) throw new Error('nsfwjs not loaded');
         const model = await nsfwjs.load();
         if (!cancelled) { nsfwModel.current = model; setNsfwReady(true); }
       } catch {
-        // If model fails to load, allow publishing anyway
         if (!cancelled) setNsfwReady(true);
       }
     })();
