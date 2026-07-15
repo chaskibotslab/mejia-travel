@@ -20,13 +20,17 @@ export default function ItemActions({ postId, sellerId, sellerName }: Props) {
       const { data } = await supabase.auth.getUser();
       if (!data.user) return;
       setUserId(data.user.id);
-      const { data: rep } = await supabase
-        .from('reports')
-        .select('id')
-        .eq('reporter_id', data.user.id)
-        .eq('post_id', postId)
-        .maybeSingle();
-      if (rep) setAlreadyReported(true);
+      try {
+        const { data: rep } = await supabase
+          .from('reports')
+          .select('id')
+          .eq('reporter_id', data.user.id)
+          .eq('post_id', postId)
+          .maybeSingle();
+        if (rep) setAlreadyReported(true);
+      } catch {
+        // Table may not exist yet — buttons still render
+      }
     })();
   }, [postId]);
 
