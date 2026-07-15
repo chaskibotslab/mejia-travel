@@ -1,7 +1,7 @@
 'use client';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Upload, Loader2, Trash2 } from 'lucide-react';
+import { Upload, Loader2, Trash2, ShieldAlert } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 const CATEGORIES = ['Vehículos', 'Hogar', 'Animales', 'Agricultura', 'Electrónica', 'Ropa', 'Otros'];
@@ -25,6 +25,10 @@ function PublishItemInner() {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [defaultHours, setDefaultHours] = useState(720); // 30 días por defecto
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [nsfwReady, setNsfwReady] = useState(false);
+  const [nsfwToast, setNsfwToast] = useState('');
+  const nsfwModel = useRef<any>(null);
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -85,8 +89,60 @@ function PublishItemInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editId]);
 
+  // Load NSFW.js model only when publishing new items (not editing)
+  useEffect(() => {
+    if (editId) { setNsfwReady(true); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        const nsfwjs = await import('nsfwjs');
+        const tf = await import('@tensorflow/tfjs');
+        await tf.ready();
+        const model = await nsfwjs.load();
+        if (!cancelled) { nsfwModel.current = model; setNsfwReady(true); }
+      } catch {
+        // If model fails to load, allow publishing anyway
+        if (!cancelled) setNsfwReady(true);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [editId]);
+
+  async function checkNSFW(file: File): Promise<boolean> {
+    if (!nsfwModel.current) return true; // allow if model unavailable
+    return new Promise((resolve) => {
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(file);
+      img.onload = async () => {
+        try {
+          const predictions = await nsfwModel.current.classify(img);
+          const porn = predictions.find((p: any) => p.className === 'Porn')?.probability || 0;
+          const hentai = predictions.find((p: any) => p.className === 'Hentai')?.probability || 0;
+          const sexy = predictions.find((p: any) => p.className === 'Sexy')?.probability || 0;
+          URL.revokeObjectURL(img.src);
+          if (porn > 0.6 || hentai > 0.6 || sexy > 0.7) {
+            setNsfwToast('Esta imagen no cumple con nuestras políticas. Por favor sube otra.');
+            setTimeout(() => setNsfwToast(''), 5000);
+            resolve(false);
+          } else if (sexy > 0.5) {
+            const ok = window.confirm('La imagen parece sugerente. Si continúas puede ser rechazada. ¿Continuar?');
+            resolve(ok);
+          } else {
+            resolve(true);
+          }
+        } catch {
+          resolve(true);
+        }
+      };
+      img.onerror = () => resolve(true);
+    });
+  }
+
   async function uploadImage(file: File) {
     setUploading(true);
+    // NSFW check before uploading
+    const safe = await checkNSFW(file);
+    if (!safe) { setUploading(false); return; }
     const ext = file.name.split('.').pop();
     const path = `marketplace/${user.id}/${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from('media').upload(path, file, { upsert: false });
@@ -141,7 +197,7 @@ function PublishItemInner() {
     const expires_at = new Date(Date.now() + defaultHours * 3600 * 1000).toISOString();
     const { data, error } = await supabase
       .from('marketplace_items')
-      .insert({ ...payload, user_id: user.id, expires_at })
+      .insert({ ...payload, user_id: user.id, expires_at, terms_accepted_at: new Date().toISOString() })
       .select('id')
       .single();
     setLoading(false);
@@ -269,13 +325,63 @@ function PublishItemInner() {
         </div>
       </Field>
 
+      {/* NSFW loading indicator */}
+      {!nsfwReady && !editId && (
+        <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 rounded-xl px-3 py-2">
+          <Loader2 className="w-4 h-4 animate-spin" />
+          Preparando moderación de contenido...
+        </div>
+      )}
+
+      {/* Normas de publicación (solo al crear) */}
+      {!editId && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm space-y-2">
+          <h4 className="font-bold flex items-center gap-1 text-amber-800">
+            <ShieldAlert className="w-4 h-4" /> Normas de publicación
+          </h4>
+          <p className="text-amber-900 text-xs">
+            Al publicar en el Mercado de Mejía Travel aceptas que está <strong>PROHIBIDO</strong>:
+          </p>
+          <ul className="text-xs text-amber-800 list-disc pl-4 space-y-0.5">
+            <li>Contenido sexual, desnudos o pornografía</li>
+            <li>Violencia, armas de fuego o material perturbador</li>
+            <li>Drogas ilegales, alcohol o tabaco</li>
+            <li>Estafas, productos falsificados o ilegales</li>
+            <li>Discriminación por raza, género, religión u orientación</li>
+            <li>Fotos de menores de edad sin autorización</li>
+            <li>Datos personales de terceros sin permiso</li>
+          </ul>
+          <p className="text-[10px] text-amber-700">
+            Las publicaciones inapropiadas serán eliminadas y las cuentas infractoras suspendidas.
+          </p>
+          <label className="flex items-start gap-2 cursor-pointer pt-1">
+            <input
+              type="checkbox"
+              checked={acceptTerms}
+              onChange={(e) => setAcceptTerms(e.target.checked)}
+              className="mt-0.5 accent-amber-600"
+            />
+            <span className="text-xs text-amber-900 font-medium">
+              Acepto las normas de publicación y confirmo que mi contenido cumple con estas reglas
+            </span>
+          </label>
+        </div>
+      )}
+
       <button
         type="submit"
-        disabled={loading}
+        disabled={loading || (!editId && !acceptTerms) || !nsfwReady}
         className="w-full rounded-xl bg-brand-600 text-white py-3 font-semibold shadow-card disabled:opacity-60"
       >
         {loading ? 'Guardando…' : editId ? 'Guardar cambios' : 'Publicar artículo'}
       </button>
+
+      {/* NSFW toast */}
+      {nsfwToast && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-red-600 text-white text-sm px-4 py-2 rounded-xl shadow-lg max-w-xs text-center">
+          {nsfwToast}
+        </div>
+      )}
 
       <style jsx>{`
         .input {

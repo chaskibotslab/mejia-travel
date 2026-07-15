@@ -2,7 +2,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { LogIn, LogOut, UserCircle, ShieldCheck, Loader2, Mail, KeyRound, Store, Tag, Eye, EyeOff } from 'lucide-react';
+import { LogIn, LogOut, UserCircle, ShieldCheck, Loader2, Mail, KeyRound, Store, Tag, Eye, EyeOff, Ban } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 export default function AccountPage() {
@@ -169,6 +169,7 @@ function AccountInner() {
           <MenuItem href="/mercado/publicar" icon={Store} label="Vender en el Mercado" highlight />
           <MenuItem href="/cuenta/mis-articulos" icon={Tag} label="Mis publicaciones del mercado" />
           <MenuItem href="/mercado" icon={UserCircle} label="Ver Mercado de Mejía" />
+          <MenuItem href="/cuenta/bloqueados" icon={Ban} label="Usuarios bloqueados" />
           {profile?.role === 'admin' && (
             <MenuItem href="/admin" icon={ShieldCheck} label="Panel de administración" />
           )}

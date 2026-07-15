@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { Phone, MessageCircle, Clock, Star, MapPin } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { telLink, waLink, timeLeft } from '@/lib/utils';
+import ItemActions from './ItemActions';
 
 export const revalidate = 10;
 
@@ -62,6 +63,8 @@ export default async function ItemPage({ params }: { params: { id: string } }) {
         <div className="mt-4 text-xs text-slate-500">
           Vendedor: <span className="font-semibold text-slate-700">{it.profiles?.full_name || 'Usuario'}</span>
         </div>
+
+        <ItemActions postId={it.id} sellerId={it.user_id} sellerName={it.profiles?.full_name} />
 
         <div className="flex gap-3 mt-5">
           {it.phone && (
