@@ -2,7 +2,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { LogIn, LogOut, UserCircle, ShieldCheck, Loader2, Mail, KeyRound, Store, Tag, Eye, EyeOff, Ban } from 'lucide-react';
+import { LogIn, LogOut, UserCircle, ShieldCheck, Loader2, Mail, KeyRound, Store, Tag, Eye, EyeOff, Ban, Trash2 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 export default function AccountPage() {
@@ -180,6 +180,13 @@ function AccountInner() {
             <LogOut className="w-5 h-5" />
             <span className="font-semibold">Cerrar sesión</span>
           </button>
+          <Link
+            href="/cuenta/eliminar"
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-white border border-red-200 text-red-500 shadow-soft mt-4"
+          >
+            <Trash2 className="w-5 h-5" />
+            <span className="font-semibold text-sm">Eliminar mi cuenta</span>
+          </Link>
         </nav>
       </div>
     );
