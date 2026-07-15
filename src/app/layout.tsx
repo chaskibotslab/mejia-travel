@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   description:
     'Descubre todos los negocios, servicios, turismo, hospedaje, gastronomía y emprendimientos del Cantón Mejía. Llama, escribe por WhatsApp o ubica en el mapa con un toque.',
   manifest: '/manifest.json',
-  appleWebApp: { capable: true, statusBarStyle: 'default', title: 'Mejía Travel' },
+  appleWebApp: { statusBarStyle: 'default', title: 'Mejía Travel' },
   icons: {
     icon: '/icons/icon-192.png',
     apple: '/icons/icon-192.png',
@@ -42,6 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es" className={inter.variable}>
       <head>
+        <meta name="mobile-web-app-capable" content="yes" />
         <script
           dangerouslySetInnerHTML={{
             __html: `window.__SUPABASE_URL__=${JSON.stringify(supabaseUrl)};window.__SUPABASE_ANON__=${JSON.stringify(supabaseAnon)};`,
