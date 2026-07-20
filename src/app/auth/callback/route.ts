@@ -54,8 +54,15 @@ export async function GET(request: Request) {
     const supabase = createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) {
+      // PKCE error: el enlace se abrió en otro navegador/dispositivo
+      const isPKCE = error.message.includes('PKCE') || error.message.includes('code verifier');
       const url = new URL('/cuenta', origin);
-      url.searchParams.set('auth_error', error.message);
+      url.searchParams.set(
+        'auth_error',
+        isPKCE
+          ? 'El enlace debe abrirse en el mismo navegador donde lo solicitaste. Usa el código de 6 dígitos del correo en su lugar.'
+          : error.message
+      );
       return NextResponse.redirect(url);
     }
   }
