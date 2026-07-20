@@ -28,6 +28,9 @@ function AccountInner() {
   const [busy, setBusy] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
   const [msg, setMsg] = useState<string | null>(authError ? `⚠️ ${authError}` : null);
+  // Protección contra fuerza bruta
+  const [loginAttempts, setLoginAttempts] = useState(0);
+  const [lockUntil, setLockUntil] = useState<number | null>(null);
   // Recovery con OTP (código de 6 dígitos por correo, sin links)
   const [recoveryOpen, setRecoveryOpen] = useState(false);
   const [recoverySent, setRecoverySent] = useState(false);
@@ -51,8 +54,28 @@ function AccountInner() {
 
   async function submit(e: any) {
     e.preventDefault();
+    // Protección contra fuerza bruta: bloqueo progresivo
+    if (lockUntil) {
+      const secsLeft = Math.ceil((lockUntil - Date.now()) / 1000);
+      if (secsLeft > 0) {
+        setMsg(`🔒 Demasiados intentos. Espera ${secsLeft} segundos.`);
+        return;
+      }
+      setLockUntil(null);
+    }
     setBusy(true);
     setMsg(null);
+    // Validación de contraseña segura
+    if (form.password.length < 8) {
+      setMsg('La contraseña debe tener al menos 8 caracteres.');
+      setBusy(false);
+      return;
+    }
+    if (mode === 'signup' && !/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(form.password)) {
+      setMsg('La contraseña debe tener al menos una mayúscula, una minúscula y un número.');
+      setBusy(false);
+      return;
+    }
     if (mode === 'signup') {
       const { data, error } = await supabase.auth.signUp({
         email: form.email,
@@ -80,8 +103,22 @@ function AccountInner() {
         email: form.email,
         password: form.password,
       });
-      if (error) setMsg(error.message);
-      else router.push(redirect);
+      if (error) {
+        const attempts = loginAttempts + 1;
+        setLoginAttempts(attempts);
+        if (attempts >= 5) {
+          // Bloqueo progresivo: 30s tras 5 intentos, 60s tras 8, 5min tras 10+
+          const lockSecs = attempts >= 10 ? 300 : attempts >= 8 ? 60 : 30;
+          setLockUntil(Date.now() + lockSecs * 1000);
+          setMsg(`🔒 ${attempts} intentos fallidos. Cuenta bloqueada por ${lockSecs} segundos.`);
+        } else {
+          setMsg(`Correo o contraseña incorrectos. Intento ${attempts}/5.`);
+        }
+      } else {
+        setLoginAttempts(0);
+        setLockUntil(null);
+        router.push(redirect);
+      }
     }
     setBusy(false);
     refresh();
