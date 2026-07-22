@@ -40,9 +40,11 @@ export default function AdminCategoriesPage() {
 
   async function save() {
     if (!editing) return;
+    if (!editing.name_es?.trim()) { alert('El nombre es obligatorio'); return; }
+    if (!editing.slug?.trim()) { alert('El slug es obligatorio'); return; }
     const payload: any = {
-      slug: editing.slug,
-      name_es: editing.name_es,
+      slug: editing.slug.trim(),
+      name_es: editing.name_es.trim(),
       name_en: editing.name_en || null,
       icon: editing.icon || null,
       color: editing.color || '#1B97A3',
@@ -58,7 +60,13 @@ export default function AdminCategoriesPage() {
     } else {
       res = await supabase.from('categories').insert(payload);
     }
-    if (res.error) { alert(res.error.message); return; }
+    if (res.error) {
+      const msg = res.error.message.includes('duplicate')
+        ? `El slug "${payload.slug}" ya existe. Usa otro nombre.`
+        : res.error.message;
+      alert('Error: ' + msg);
+      return;
+    }
     setEditing(null);
     load();
   }
