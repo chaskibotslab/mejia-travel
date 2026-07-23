@@ -208,11 +208,21 @@ export default function BusinessForm({ businessId }: { businessId?: string }) {
         </div>
       </F>
 
-      <F label="Catálogo PDF (opcional)">
-        <label className="block rounded-xl border-2 border-dashed border-slate-300 px-3 py-3 text-sm text-slate-500 cursor-pointer hover:bg-slate-50 text-center">
-          {form.catalog_pdf ? '✓ PDF subido — reemplazar' : 'Subir PDF'}
-          <input type="file" accept="application/pdf" className="hidden" onChange={(e) => e.target.files?.[0] && uploadFile(e.target.files[0], 'catalog_pdf')} />
-        </label>
+      <F label="Catálogo PDF (opcional, máx 20 MB)">
+        <div className="flex items-center gap-2">
+          <label className="flex-1 rounded-xl border-2 border-dashed border-slate-300 px-3 py-3 text-sm text-slate-500 cursor-pointer hover:bg-slate-50 text-center">
+            {uploading ? 'Subiendo…' : form.catalog_pdf ? '✓ PDF subido — reemplazar' : 'Subir PDF'}
+            <input type="file" accept="application/pdf" className="hidden" onChange={(e) => e.target.files?.[0] && uploadFile(e.target.files[0], 'catalog_pdf')} />
+          </label>
+          {form.catalog_pdf && (
+            <button type="button" onClick={() => set('catalog_pdf', '')} className="px-3 py-2 rounded-xl bg-red-50 text-red-600 text-xs font-semibold border border-red-200">
+              Quitar
+            </button>
+          )}
+        </div>
+        {form.catalog_pdf && (
+          <a href={form.catalog_pdf} target="_blank" rel="noreferrer" className="text-xs text-brand-600 underline mt-1 inline-block">Ver PDF actual</a>
+        )}
       </F>
 
       <label className="flex items-center gap-2 mt-3">
