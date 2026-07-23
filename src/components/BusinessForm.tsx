@@ -90,12 +90,24 @@ export default function BusinessForm({ businessId }: { businessId?: string }) {
   }
 
   async function uploadFile(file: File, field: 'cover_image' | 'catalog_pdf') {
+    if (field === 'catalog_pdf' && file.size > 20 * 1024 * 1024) {
+      alert('El PDF es muy grande. Máximo 20 MB.');
+      return;
+    }
+    if (field === 'cover_image' && file.size > 10 * 1024 * 1024) {
+      alert('La imagen es muy grande. Máximo 10 MB.');
+      return;
+    }
     setUploading(true);
-    const ext = file.name.split('.').pop();
-    const path = `businesses/${user.id}/${Date.now()}.${ext}`;
-    const { error } = await supabase.storage.from('media').upload(path, file, { upsert: false });
+    const ext = (file.name.split('.').pop() || 'pdf').toLowerCase();
+    const path = `businesses/${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 6)}.${ext}`;
+    const { error } = await supabase.storage.from('media').upload(path, file, {
+      upsert: false,
+      cacheControl: '31536000',
+      contentType: file.type || (field === 'catalog_pdf' ? 'application/pdf' : 'image/jpeg'),
+    });
     if (error) {
-      alert(error.message);
+      alert('Error al subir archivo: ' + error.message);
       setUploading(false);
       return;
     }
