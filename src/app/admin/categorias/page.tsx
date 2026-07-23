@@ -124,11 +124,9 @@ export default function AdminCategoriesPage() {
                     {childrenCount > 0 && ` · ${childrenCount} subcat.`}
                   </div>
                 </div>
-                {childrenCount > 0 && (
-                  <button onClick={() => setParentFilter(c.id)} className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg" aria-label="Ver subcategorías">
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                )}
+                <button onClick={() => setParentFilter(c.id)} className="p-2 text-slate-500 hover:bg-slate-100 rounded-lg" aria-label="Ver subcategorías">
+                  <ChevronRight className="w-4 h-4" />
+                </button>
                 <button onClick={() => setEditing(c)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg" aria-label="Editar">
                   <Pencil className="w-4 h-4" />
                 </button>
