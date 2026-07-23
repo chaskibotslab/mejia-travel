@@ -90,8 +90,8 @@ export default function BusinessForm({ businessId }: { businessId?: string }) {
   }
 
   async function uploadFile(file: File, field: 'cover_image' | 'catalog_pdf') {
-    if (field === 'catalog_pdf' && file.size > 20 * 1024 * 1024) {
-      alert('El PDF es muy grande. Máximo 20 MB.');
+    if (field === 'catalog_pdf' && file.size > 10 * 1024 * 1024) {
+      alert('El PDF es muy grande. Máximo 10 MB.');
       return;
     }
     if (field === 'cover_image' && file.size > 10 * 1024 * 1024) {
@@ -208,7 +208,7 @@ export default function BusinessForm({ businessId }: { businessId?: string }) {
         </div>
       </F>
 
-      <F label="Catálogo PDF (opcional, máx 20 MB)">
+      <F label="Catálogo PDF (opcional, máx 10 MB)">
         <div className="flex items-center gap-2">
           <label className="flex-1 rounded-xl border-2 border-dashed border-slate-300 px-3 py-3 text-sm text-slate-500 cursor-pointer hover:bg-slate-50 text-center">
             {uploading ? 'Subiendo…' : form.catalog_pdf ? '✓ PDF subido — reemplazar' : 'Subir PDF'}
