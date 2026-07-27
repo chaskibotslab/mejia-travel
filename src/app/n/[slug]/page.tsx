@@ -21,6 +21,10 @@ export default async function BusinessPage({ params }: { params: { slug: string 
 
   if (!data) notFound();
   const b = data as Business;
+  // Normalizar galería vieja (string[]) al nuevo formato
+  if (b.gallery && b.gallery.length > 0 && typeof b.gallery[0] === 'string') {
+    b.gallery = (b.gallery as unknown as string[]).map((url) => ({ image_url: url }));
+  }
 
   // Incrementar vista (best-effort, no bloquea)
   supabase
@@ -122,6 +126,27 @@ export default async function BusinessPage({ params }: { params: { slug: string 
             <p className="text-sm leading-relaxed whitespace-pre-line text-slate-700">
               {b.description}
             </p>
+          </section>
+        )}
+
+        {/* Galería de fotos */}
+        {b.gallery && b.gallery.length > 0 && (
+          <section className="mb-4">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-2">Galería</h2>
+            <div className="space-y-3">
+              {b.gallery.filter((g) => g.image_url).map((item, i) => (
+                <div key={i} className="rounded-2xl overflow-hidden border border-slate-200 shadow-soft bg-white">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={item.image_url} alt={item.title || `Foto ${i + 1}`} className="w-full aspect-[4/3] object-cover" />
+                  {(item.title || item.description) && (
+                    <div className="p-3">
+                      {item.title && <p className="font-semibold text-sm text-slate-800">{item.title}</p>}
+                      {item.description && <p className="text-xs text-slate-500 mt-0.5">{item.description}</p>}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </section>
         )}
 

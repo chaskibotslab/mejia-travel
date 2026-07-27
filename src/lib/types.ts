@@ -89,6 +89,12 @@ export type Banner = {
   ends_at: string | null;
 };
 
+export type GalleryItem = {
+  image_url: string;
+  title?: string;
+  description?: string;
+};
+
 export type Business = {
   id: string;
   owner_id: string | null;
@@ -111,7 +117,7 @@ export type Business = {
   latitude: number | null;
   longitude: number | null;
   cover_image: string | null;
-  gallery: string[];
+  gallery: GalleryItem[];
   catalog_pdf: string | null;
   logo: string | null;
   schedule: Record<string, { open: string; close: string }>;

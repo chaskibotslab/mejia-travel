@@ -4,6 +4,8 @@ import { useRouter } from 'next/navigation';
 import { Upload, Loader2, MapPin } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import CategoryPicker from '@/components/CategoryPicker';
+import GalleryEditor from '@/components/GalleryEditor';
+import type { GalleryItem } from '@/lib/types';
 
 const empty = {
   name: '',
@@ -25,6 +27,7 @@ const empty = {
   latitude: '',
   longitude: '',
   cover_image: '',
+  gallery: [] as GalleryItem[],
   catalog_pdf: '',
   is_published: false,
 };
@@ -68,7 +71,14 @@ export default function BusinessForm({ businessId }: { businessId?: string }) {
       setCategories(cats ?? []);
       if (businessId) {
         const { data: b } = await supabase.from('businesses').select('*').eq('id', businessId).single();
-        if (b) setForm({ ...empty, ...b, latitude: b.latitude ?? '', longitude: b.longitude ?? '' });
+        if (b) {
+          // Normalizar galería vieja (string[]) al nuevo formato (GalleryItem[])
+          let gallery = b.gallery ?? [];
+          if (gallery.length > 0 && typeof gallery[0] === 'string') {
+            gallery = (gallery as unknown as string[]).map((url) => ({ image_url: url, title: '', description: '' }));
+          }
+          setForm({ ...empty, ...b, gallery, latitude: b.latitude ?? '', longitude: b.longitude ?? '' });
+        }
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -206,6 +216,13 @@ export default function BusinessForm({ businessId }: { businessId?: string }) {
             <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && uploadFile(e.target.files[0], 'cover_image')} />
           </label>
         </div>
+      </F>
+
+      <F label="Galería de fotos">
+        <GalleryEditor
+          value={form.gallery || []}
+          onChange={(items) => set('gallery', items)}
+        />
       </F>
 
       <F label="Catálogo PDF (opcional, máx 10 MB)">
