@@ -110,6 +110,7 @@ export type Business = {
   facebook: string | null;
   instagram: string | null;
   tiktok: string | null;
+  parroquia: string | null;
   address: string | null;
   address_branch_1: string | null;
   address_branch_2: string | null;

@@ -158,7 +158,7 @@ export default async function CategoryPage({ params }: { params: { slug: string 
   // mode === 'businesses' (default)
   const { data: biz } = await supabase
     .from('businesses')
-    .select('id, slug, name, short_description, cover_image, rating_avg, rating_count, is_verified')
+    .select('id, slug, name, short_description, parroquia, cover_image, rating_avg, rating_count, is_verified')
     .eq('category_id', category.id)
     .eq('is_published', true)
     .order('is_featured', { ascending: false })
@@ -196,11 +196,18 @@ export default async function CategoryPage({ params }: { params: { slug: string 
                   {b.short_description && (
                     <p className="text-xs text-slate-500 truncate">{b.short_description}</p>
                   )}
-                  {b.rating_count > 0 && (
-                    <p className="text-xs text-amber-600">
-                      ★ {Number(b.rating_avg).toFixed(1)} ({b.rating_count})
-                    </p>
-                  )}
+                  <div className="flex items-center gap-2 mt-0.5">
+                    {b.parroquia && (
+                      <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-full">
+                        <MapPin className="w-2.5 h-2.5" />{b.parroquia}
+                      </span>
+                    )}
+                    {b.rating_count > 0 && (
+                      <span className="text-[10px] text-amber-600 font-semibold">
+                        ★ {Number(b.rating_avg).toFixed(1)} ({b.rating_count})
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <ChevronRight className="w-5 h-5 text-slate-400" />
               </Link>

@@ -20,6 +20,7 @@ const empty = {
   facebook: '',
   instagram: '',
   tiktok: '',
+  parroquia: '',
   address: '',
   address_branch_1: '',
   address_branch_2: '',
@@ -191,6 +192,19 @@ export default function BusinessForm({ businessId }: { businessId?: string }) {
         <F label="TikTok"><input value={form.tiktok} onChange={(e) => set('tiktok', e.target.value)} className="inp" /></F>
       </div>
 
+      <F label="Parroquia">
+        <select value={form.parroquia} onChange={(e) => set('parroquia', e.target.value)} className="inp">
+          <option value="">— Seleccionar parroquia —</option>
+          <option value="Machachi">Machachi</option>
+          <option value="Alóag">Alóag</option>
+          <option value="Aloasí">Aloasí</option>
+          <option value="Cutuglagua">Cutuglagua</option>
+          <option value="El Chaupi">El Chaupi</option>
+          <option value="Manuel Cornejo Astorga">Manuel Cornejo Astorga</option>
+          <option value="Tambillo">Tambillo</option>
+          <option value="Uyumbicho">Uyumbicho</option>
+        </select>
+      </F>
       <F label="Dirección"><input value={form.address} onChange={(e) => set('address', e.target.value)} className="inp" /></F>
       <F label="Sucursal 1"><input value={form.address_branch_1} onChange={(e) => set('address_branch_1', e.target.value)} className="inp" /></F>
       <F label="Sucursal 2"><input value={form.address_branch_2} onChange={(e) => set('address_branch_2', e.target.value)} className="inp" /></F>
