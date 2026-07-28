@@ -129,10 +129,9 @@ export default async function BusinessPage({ params }: { params: { slug: string 
           </section>
         )}
 
-        {/* Galería de fotos */}
+        {/* Fotos adicionales */}
         {b.gallery && b.gallery.length > 0 && (
           <section className="mb-4">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-2">Galería</h2>
             <div className="space-y-3">
               {b.gallery.filter((g) => g.image_url).map((item, i) => (
                 <div key={i} className="rounded-2xl overflow-hidden border border-slate-200 shadow-soft bg-white">
