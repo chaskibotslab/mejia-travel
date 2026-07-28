@@ -6,6 +6,7 @@ import type { Business } from '@/lib/types';
 import TrackButton from '@/components/TrackButton';
 import dynamic from 'next/dynamic';
 import ReviewsSection from '@/components/ReviewsSection';
+import ImageZoom from '@/components/ImageZoom';
 
 const MapView = dynamic(() => import('@/components/MapView'), { ssr: false });
 
@@ -37,8 +38,7 @@ export default async function BusinessPage({ params }: { params: { slug: string 
       {/* Cover */}
       <div className="relative w-full aspect-[16/9] bg-slate-200">
         {b.cover_image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={b.cover_image} alt={b.name} className="w-full h-full object-cover" />
+          <ImageZoom src={b.cover_image} alt={b.name} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-brand-600 to-accent-500 grid place-items-center text-white text-3xl font-bold">
             {b.name.charAt(0)}
@@ -123,7 +123,7 @@ export default async function BusinessPage({ params }: { params: { slug: string 
         {/* Descripción */}
         {b.description && (
           <section className="rounded-2xl bg-white border border-slate-200 p-4 mb-3 shadow-soft">
-            <p className="text-sm leading-relaxed whitespace-pre-line text-slate-700">
+            <p className="text-sm leading-relaxed whitespace-pre-line text-slate-700 text-justify">
               {b.description}
             </p>
           </section>
@@ -135,12 +135,11 @@ export default async function BusinessPage({ params }: { params: { slug: string 
             <div className="space-y-3">
               {b.gallery.filter((g) => g.image_url).map((item, i) => (
                 <div key={i} className="rounded-2xl overflow-hidden border border-slate-200 shadow-soft bg-white">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={item.image_url} alt={item.title || `Foto ${i + 1}`} className="w-full aspect-[4/3] object-cover" />
+                  <ImageZoom src={item.image_url} alt={item.title || `Foto ${i + 1}`} className="w-full aspect-[4/3] object-cover" />
                   {(item.title || item.description) && (
                     <div className="p-3">
                       {item.title && <p className="font-semibold text-sm text-slate-800">{item.title}</p>}
-                      {item.description && <p className="text-xs text-slate-500 mt-0.5">{item.description}</p>}
+                      {item.description && <p className="text-xs text-slate-500 mt-0.5 text-justify">{item.description}</p>}
                     </div>
                   )}
                 </div>

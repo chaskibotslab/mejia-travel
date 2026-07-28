@@ -86,7 +86,7 @@ export default async function CategoryPage({ params }: { params: { slug: string 
                     {p.profession && <p className="text-xs text-slate-500 truncate">{p.profession}</p>}
                   </div>
                 </div>
-                {p.bio && <p className="text-sm text-slate-600 mb-2 line-clamp-2">{p.bio}</p>}
+                {p.bio && <p className="text-sm text-slate-600 mb-2 line-clamp-2 text-justify">{p.bio}</p>}
                 <div className="flex flex-wrap gap-1.5">
                   {p.phone && (
                     <a href={telLink(p.phone)} className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium">
