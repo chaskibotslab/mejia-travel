@@ -161,6 +161,7 @@ export default function AdminCategoriesPage() {
                   <option value="businesses">Negocios / Empresas</option>
                   <option value="professionals">Profesionales individuales</option>
                   <option value="cooperatives">Cooperativas de transporte</option>
+                  <option value="announcements">Anuncios / Propuestas / Política</option>
                 </select>
               </Field>
               <Field label="Logo / imagen (opcional)">

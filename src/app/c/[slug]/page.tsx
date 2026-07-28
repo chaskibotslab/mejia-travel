@@ -155,6 +155,61 @@ export default async function CategoryPage({ params }: { params: { slug: string 
     );
   }
 
+  // mode === 'announcements' (política, anuncios, propuestas)
+  if (mode === 'announcements') {
+    const { data: biz } = await supabase
+      .from('businesses')
+      .select('id, slug, name, short_description, description, parroquia, cover_image, is_verified')
+      .eq('category_id', category.id)
+      .eq('is_published', true)
+      .order('is_featured', { ascending: false })
+      .order('created_at', { ascending: false });
+
+    const items = (biz ?? []) as Business[];
+
+    return (
+      <div className="px-4 pt-4 fade-in">
+        <h1 className="text-xl font-bold text-slate-800 mb-3">{category.name_es}</h1>
+        {category.description && (
+          <p className="text-sm text-slate-500 mb-3 text-justify">{category.description}</p>
+        )}
+        {items.length === 0 ? (
+          <p className="text-slate-500 text-sm">Aún no hay publicaciones en esta categoría.</p>
+        ) : (
+          <ul className="space-y-4">
+            {items.map((b) => (
+              <li key={b.id}>
+                <Link
+                  href={`/n/${b.slug}`}
+                  className="block rounded-2xl bg-white border border-slate-200 overflow-hidden shadow-soft hover:shadow-card active:scale-[0.99] transition"
+                >
+                  {b.cover_image && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={b.cover_image} alt={b.name} className="w-full aspect-[16/9] object-cover" />
+                  )}
+                  <div className="p-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-bold text-base text-slate-800">{b.name}</h3>
+                      {b.is_verified && <span className="text-blue-500 text-xs">✓</span>}
+                    </div>
+                    {b.parroquia && (
+                      <span className="inline-flex items-center gap-0.5 text-[11px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full mb-2">
+                        <MapPin className="w-3 h-3" />{b.parroquia}
+                      </span>
+                    )}
+                    {b.short_description && (
+                      <p className="text-sm text-slate-600 text-justify">{b.short_description}</p>
+                    )}
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
+  }
+
   // mode === 'businesses' (default)
   const { data: biz } = await supabase
     .from('businesses')

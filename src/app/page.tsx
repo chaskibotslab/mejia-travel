@@ -143,7 +143,7 @@ export default async function HomePage({ searchParams }: { searchParams: { code?
 
       {/* Footer */}
       <div className="mt-16 mb-6 text-center text-xs text-slate-400">
-        <p>Hecho con 💚 para el Cantón Mejía</p>
+        <p>Hecho por <span className="font-semibold text-slate-500">Chaski Bots Lab</span> para el Cantón Mejía</p>
         <p className="mt-1">© {new Date().getFullYear()} Mejía Travel</p>
       </div>
     </div>

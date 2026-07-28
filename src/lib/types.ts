@@ -1,6 +1,6 @@
 // Tipos de la base de datos Mejía Travel
 
-export type ListingMode = 'businesses' | 'professionals' | 'cooperatives' | 'custom';
+export type ListingMode = 'businesses' | 'professionals' | 'cooperatives' | 'announcements' | 'custom';
 
 export type Category = {
   id: string;
