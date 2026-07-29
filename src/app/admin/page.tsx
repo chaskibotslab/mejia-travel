@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Loader2, Store, Users, Bus, Tags, Calendar, ShoppingBag, Image as ImageIcon } from 'lucide-react';
+import { Loader2, Store, Users, Bus, Tags, Calendar, ShoppingBag, Image as ImageIcon, Megaphone } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 export default function AdminHome() {
@@ -28,6 +28,7 @@ export default function AdminHome() {
     { href: '/admin/negocios',      label: 'Negocios',      icon: Store,        count: counts.businesses,             color: 'bg-brand-600' },
     { href: '/admin/profesionales', label: 'Profesionales', icon: Users,        count: counts.professionals,          color: 'bg-purple-600' },
     { href: '/admin/cooperativas',  label: 'Cooperativas',  icon: Bus,          count: counts.transport_cooperatives, color: 'bg-emerald-600' },
+    { href: '/admin/candidatos/nuevo', label: 'Candidatos', icon: Megaphone,     count: null,                           color: 'bg-indigo-600' },
     { href: '/admin/eventos',       label: 'Eventos',       icon: Calendar,     count: counts.events,                 color: 'bg-rose-600' },
     { href: '/admin/mercado',       label: 'Mercado',       icon: ShoppingBag,  count: counts.marketplace_items,      color: 'bg-orange-500' },
     { href: '/admin/banners',       label: 'Banners',       icon: ImageIcon,    count: counts.banners,                color: 'bg-cyan-600' },
