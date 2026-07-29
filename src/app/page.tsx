@@ -5,7 +5,7 @@ import CategoryTile from '@/components/CategoryTile';
 import HomeHero from '@/components/HomeHero';
 import PlaceCard from '@/components/PlaceCard';
 import EventCard from '@/components/EventCard';
-import { ChevronRight, Calendar, Mountain, Compass, Route, Clock } from 'lucide-react';
+import { ChevronRight, Calendar, Mountain, Compass, Route, Clock, Megaphone } from 'lucide-react';
 
 export const revalidate = 60;
 
@@ -22,12 +22,14 @@ export default async function HomePage({ searchParams }: { searchParams: { code?
     { data: featuredData },
     { data: eventsData },
     { data: routesData },
+    { data: announcementsData },
   ] = await Promise.all([
     supabase.from('categories').select('*').is('parent_id', null).order('sort_order'),
     supabase.from('banners').select('*').eq('is_active', true).order('sort_order'),
     supabase.from('businesses').select('id, slug, name, cover_image, short_description, address, rating_avg, rating_count, is_verified, categories(name_es)').eq('is_published', true).eq('is_featured', true).order('created_at', { ascending: false }).limit(6),
     supabase.from('events').select('*').eq('is_published', true).gte('starts_at', new Date().toISOString()).order('starts_at').limit(6),
     supabase.from('tourist_routes').select('*').eq('is_published', true).order('sort_order').limit(4),
+    supabase.from('categories').select('*').eq('listing_mode', 'announcements').order('sort_order'),
   ]);
 
   const categories = (categoriesData ?? []) as any[];
@@ -35,6 +37,7 @@ export default async function HomePage({ searchParams }: { searchParams: { code?
   const featured = (featuredData ?? []) as any[];
   const events = (eventsData ?? []) as any[];
   const routes = (routesData ?? []) as any[];
+  const announcements = (announcementsData ?? []) as any[];
 
   return (
     <div className="fade-in">
@@ -117,6 +120,32 @@ export default async function HomePage({ searchParams }: { searchParams: { code?
                 </div>
               ))}
             </HorizontalScroll>
+          </Section>
+        )}
+
+        {/* CANDIDATOS / POLÍTICA */}
+        {announcements.length > 0 && (
+          <Section icon={Megaphone} title="Candidatos y Propuestas" subtitle="Conoce a tus postulantes">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {announcements.map((c: any) => (
+                <Link
+                  key={c.id}
+                  href={`/c/${c.slug}`}
+                  className="group relative flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-[0_6px_20px_rgba(120,40,200,0.25)] active:scale-[0.97] transition overflow-hidden"
+                >
+                  <div className="absolute -top-4 -right-4 w-16 h-16 bg-white/10 rounded-full blur-xl" />
+                  {c.cover_image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={c.cover_image} alt={c.name_es} className="w-12 h-12 rounded-full object-cover ring-2 ring-white/40" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-white/20 grid place-items-center">
+                      <Megaphone className="w-6 h-6 text-white" />
+                    </div>
+                  )}
+                  <span className="text-sm font-bold text-center leading-tight">{c.name_es}</span>
+                </Link>
+              ))}
+            </div>
           </Section>
         )}
 

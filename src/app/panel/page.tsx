@@ -58,6 +58,19 @@ export default function OwnerPanelPage() {
 
   return (
     <div className="px-4 pt-4 fade-in">
+      {/* Botón destacado para crear candidato */}
+      <Link
+        href="/admin/candidatos/nuevo"
+        className="flex items-center gap-3 mb-4 p-4 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-[0_6px_20px_rgba(120,40,200,0.25)] active:scale-[0.98] transition"
+      >
+        <Megaphone className="w-6 h-6 flex-shrink-0" />
+        <div className="flex-1">
+          <p className="font-bold">Nuevo candidato</p>
+          <p className="text-xs text-white/80">Formulario de postulantes con propuestas</p>
+        </div>
+        <Plus className="w-5 h-5" />
+      </Link>
+
       {/* Negocios */}
       <div className="flex items-center justify-between mb-4">
         <div>
