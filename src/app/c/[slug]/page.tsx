@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronRight, Phone, MessageCircle, MapPin } from 'lucide-react';
+import { ChevronRight, Phone, MessageCircle, MapPin, Heart, Eye } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import CategoryTile from '@/components/CategoryTile';
 import type { Category, Business, Professional, TransportCooperative } from '@/lib/types';
@@ -167,6 +167,16 @@ export default async function CategoryPage({ params }: { params: { slug: string 
 
     const items = (biz ?? []) as Business[];
 
+    // Obtener métricas de likes y vistas
+    const metrics: Record<string, { likes: number; views: number }> = {};
+    for (const item of items) {
+      const [likesRes, viewsRes] = await Promise.all([
+        supabase.from('business_analytics').select('*', { count: 'exact', head: true }).eq('business_id', item.id).eq('event_type', 'like'),
+        supabase.from('business_analytics').select('*', { count: 'exact', head: true }).eq('business_id', item.id).eq('event_type', 'view'),
+      ]);
+      metrics[item.id] = { likes: likesRes.count ?? 0, views: viewsRes.count ?? 0 };
+    }
+
     return (
       <div className="px-4 pt-4 fade-in">
         <h1 className="text-xl font-bold text-slate-800 mb-3">{category.name_es}</h1>
@@ -200,6 +210,10 @@ export default async function CategoryPage({ params }: { params: { slug: string 
                     {b.short_description && (
                       <p className="text-sm text-slate-600 text-justify">{b.short_description}</p>
                     )}
+                    <div className="flex items-center gap-3 mt-2 text-xs text-slate-400">
+                      <span className="flex items-center gap-1"><Heart className="w-3 h-3" />{metrics[b.id]?.likes ?? 0}</span>
+                      <span className="flex items-center gap-1"><Eye className="w-3 h-3" />{metrics[b.id]?.views ?? 0}</span>
+                    </div>
                   </div>
                 </Link>
               </li>

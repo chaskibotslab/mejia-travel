@@ -7,6 +7,7 @@ import TrackButton from '@/components/TrackButton';
 import dynamic from 'next/dynamic';
 import ReviewsSection from '@/components/ReviewsSection';
 import ImageZoom from '@/components/ImageZoom';
+import LikeButton from '@/components/LikeButton';
 
 const MapView = dynamic(() => import('@/components/MapView'), { ssr: false });
 
@@ -26,6 +27,13 @@ export default async function BusinessPage({ params }: { params: { slug: string 
   if (b.gallery && b.gallery.length > 0 && typeof b.gallery[0] === 'string') {
     b.gallery = (b.gallery as unknown as string[]).map((url) => ({ image_url: url }));
   }
+
+  // Contar likes
+  const { count: likeCount } = await supabase
+    .from('business_analytics')
+    .select('*', { count: 'exact', head: true })
+    .eq('business_id', b.id)
+    .eq('event_type', 'like');
 
   // Incrementar vista (best-effort, no bloquea)
   supabase
@@ -57,13 +65,16 @@ export default async function BusinessPage({ params }: { params: { slug: string 
           <p className="text-sm text-slate-600 mt-1">{b.short_description}</p>
         )}
 
-        {b.rating_count > 0 && (
-          <div className="flex items-center gap-1 mt-2 text-amber-600">
-            <Star className="w-4 h-4 fill-amber-500 stroke-amber-500" />
-            <span className="font-semibold">{Number(b.rating_avg).toFixed(1)}</span>
-            <span className="text-slate-500 text-sm">({b.rating_count} reseñas)</span>
-          </div>
-        )}
+        <div className="flex items-center gap-3 mt-2 flex-wrap">
+          {b.rating_count > 0 && (
+            <div className="flex items-center gap-1 text-amber-600">
+              <Star className="w-4 h-4 fill-amber-500 stroke-amber-500" />
+              <span className="font-semibold">{Number(b.rating_avg).toFixed(1)}</span>
+              <span className="text-slate-500 text-sm">({b.rating_count})</span>
+            </div>
+          )}
+          <LikeButton businessId={b.id} initialCount={likeCount ?? 0} />
+        </div>
 
         {/* Acciones rápidas */}
         <div className="flex justify-around mt-5 mb-6">
