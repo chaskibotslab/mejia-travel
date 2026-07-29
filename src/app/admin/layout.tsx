@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { Loader2, ShieldCheck, LayoutDashboard, Store, Users, Bus, Tags, Calendar, ShoppingBag, Image as ImageIcon, Settings, Route } from 'lucide-react';
+import { Loader2, ShieldCheck, LayoutDashboard, Store, Users, Bus, Tags, Calendar, ShoppingBag, Image as ImageIcon, Settings, Route, Megaphone } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 const NAV = [
@@ -11,6 +11,7 @@ const NAV = [
   { href: '/admin/negocios',        label: 'Negocios',       icon: Store },
   { href: '/admin/profesionales',   label: 'Profesionales',  icon: Users },
   { href: '/admin/cooperativas',    label: 'Cooperativas',   icon: Bus },
+  { href: '/admin/candidatos/nuevo', label: 'Candidatos',    icon: Megaphone },
   { href: '/admin/eventos',         label: 'Eventos',        icon: Calendar },
   { href: '/admin/rutas',           label: 'Rutas turísticas', icon: Route },
   { href: '/admin/mercado',         label: 'Mercado',        icon: ShoppingBag },
