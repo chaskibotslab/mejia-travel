@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Plus, Eye, Phone, MessageCircle, Edit3, Loader2 } from 'lucide-react';
+import { Plus, Eye, Phone, MessageCircle, Edit3, Loader2, Megaphone } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 export default function OwnerPanelPage() {
@@ -10,6 +10,7 @@ export default function OwnerPanelPage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [businesses, setBusinesses] = useState<any[]>([]);
+  const [candidateCategoryIds, setCandidateCategoryIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,6 +32,14 @@ export default function OwnerPanelPage() {
         .select('*')
         .order('created_at', { ascending: false });
       setBusinesses(biz ?? []);
+
+      // Cargar categorías de tipo announcements para identificar candidatos
+      const { data: cats } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('listing_mode', 'announcements');
+      setCandidateCategoryIds((cats ?? []).map((c: any) => c.id));
+
       setLoading(false);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -44,8 +53,12 @@ export default function OwnerPanelPage() {
     );
   }
 
+  const candidates = businesses.filter((b) => candidateCategoryIds.includes(b.category_id));
+  const regularBusinesses = businesses.filter((b) => !candidateCategoryIds.includes(b.category_id));
+
   return (
     <div className="px-4 pt-4 fade-in">
+      {/* Negocios */}
       <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className="text-xl font-bold">Mi panel de negocio</h1>
@@ -59,7 +72,7 @@ export default function OwnerPanelPage() {
         </Link>
       </div>
 
-      {businesses.length === 0 ? (
+      {regularBusinesses.length === 0 ? (
         <div className="rounded-2xl border-2 border-dashed border-slate-300 p-6 text-center text-slate-500">
           <p className="font-semibold mb-1">Aún no tienes negocios registrados</p>
           <p className="text-sm mb-4">Registra tu emprendimiento y aparece en Mejía Travel.</p>
@@ -72,7 +85,7 @@ export default function OwnerPanelPage() {
         </div>
       ) : (
         <ul className="space-y-3">
-          {businesses.map((b) => (
+          {regularBusinesses.map((b) => (
             <li
               key={b.id}
               className="rounded-2xl bg-white border border-slate-200 p-4 shadow-soft"
@@ -127,6 +140,88 @@ export default function OwnerPanelPage() {
           ))}
         </ul>
       )}
+
+      {/* Candidatos / Política */}
+      <div className="mt-8">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Megaphone className="w-5 h-5 text-brand-600" />
+            <div>
+              <h2 className="text-xl font-bold">Candidatos</h2>
+              <p className="text-xs text-slate-500">Postulantes y propuestas políticas</p>
+            </div>
+          </div>
+          <Link
+            href="/admin/candidatos/nuevo"
+            className="flex items-center gap-1.5 rounded-xl bg-brand-600 text-white px-3 py-2 text-sm font-semibold shadow-card"
+          >
+            <Plus className="w-4 h-4" /> Nuevo candidato
+          </Link>
+        </div>
+
+        {candidates.length === 0 ? (
+          <div className="rounded-2xl border-2 border-dashed border-slate-300 p-6 text-center text-slate-500">
+            <p className="font-semibold mb-1">No hay candidatos registrados</p>
+            <p className="text-sm mb-4">Agrega postulantes con sus propuestas.</p>
+            <Link
+              href="/admin/candidatos/nuevo"
+              className="inline-block rounded-xl bg-brand-600 text-white px-4 py-2 font-semibold"
+            >
+              Agregar candidato
+            </Link>
+          </div>
+        ) : (
+          <ul className="space-y-3">
+            {candidates.map((b) => (
+              <li
+                key={b.id}
+                className="rounded-2xl bg-white border border-slate-200 p-4 shadow-soft"
+              >
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold truncate">{b.name}</h3>
+                    {b.short_description && (
+                      <p className="text-xs text-slate-500 truncate">{b.short_description}</p>
+                    )}
+                    <div className="flex items-center gap-2 text-xs mt-0.5">
+                      <span
+                        className={`px-2 py-0.5 rounded-full ${
+                          b.is_published
+                            ? 'bg-emerald-100 text-emerald-700'
+                            : 'bg-amber-100 text-amber-700'
+                        }`}
+                      >
+                        {b.is_published ? 'Publicado' : 'Borrador'}
+                      </span>
+                      {b.movimiento_politico && (
+                        <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">
+                          {b.movimiento_politico}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <Link
+                    href={`/admin/candidatos/${b.id}/editar`}
+                    className="p-2 rounded-lg hover:bg-slate-100"
+                    aria-label="Editar"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                  </Link>
+                </div>
+
+                {b.is_published && (
+                  <Link
+                    href={`/n/${b.slug}`}
+                    className="block text-center text-sm text-brand-600 font-medium mt-3"
+                  >
+                    Ver perfil público →
+                  </Link>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }
