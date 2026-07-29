@@ -21,14 +21,10 @@ export default function LikeButton({ businessId, initialCount }: Props) {
   async function toggle() {
     const supabase = createClient();
     if (liked) {
-      // Unlike
+      // Unlike — solo revertir UI, no borramos (RLS no permite)
       localStorage.removeItem(`like_${businessId}`);
       setLiked(false);
       setCount((c) => Math.max(0, c - 1));
-      supabase.from('business_analytics').delete()
-        .eq('id', localStorage.getItem(`like_id_${businessId}`) || '')
-        .then(() => {});
-      localStorage.removeItem(`like_id_${businessId}`);
     } else {
       // Like
       setAnimating(true);
@@ -36,17 +32,21 @@ export default function LikeButton({ businessId, initialCount }: Props) {
       localStorage.setItem(`like_${businessId}`, '1');
       setLiked(true);
       setCount((c) => c + 1);
-      const { data } = await supabase
+      const { error } = await supabase
         .from('business_analytics')
-        .insert({ business_id: businessId, event_type: 'like' })
-        .select('id')
-        .single();
-      if (data) localStorage.setItem(`like_id_${businessId}`, data.id);
+        .insert({ business_id: businessId, event_type: 'like' });
+      if (error) {
+        // Revertir si falla
+        localStorage.removeItem(`like_${businessId}`);
+        setLiked(false);
+        setCount((c) => Math.max(0, c - 1));
+      }
     }
   }
 
   return (
     <button
+      type="button"
       onClick={toggle}
       className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold transition-all active:scale-95 ${
         liked

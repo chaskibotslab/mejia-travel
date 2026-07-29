@@ -78,3 +78,13 @@ BEGIN
     ALTER TABLE businesses ADD COLUMN movimiento_politico TEXT;
   END IF;
 END $$;
+
+-- 5. ARREGLO: permitir 'like' en business_analytics + permitir lectura pública de conteos
+ALTER TABLE public.business_analytics DROP CONSTRAINT IF EXISTS business_analytics_event_type_check;
+ALTER TABLE public.business_analytics ADD CONSTRAINT business_analytics_event_type_check
+  CHECK (event_type in ('view','call','whatsapp','map','website','like'));
+
+-- Permitir a cualquiera contar analytics (necesario para mostrar likes/vistas públicamente)
+DROP POLICY IF EXISTS "Public can count analytics" ON public.business_analytics;
+CREATE POLICY "Public can count analytics" ON public.business_analytics
+  FOR SELECT USING (true);
