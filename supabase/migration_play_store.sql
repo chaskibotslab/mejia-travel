@@ -61,3 +61,20 @@ BEGIN
     ALTER TABLE marketplace_items ADD COLUMN terms_accepted_at TIMESTAMPTZ;
   END IF;
 END $$;
+
+-- 4. COLUMNAS PARA CANDIDATOS POLÍTICOS
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='businesses' AND column_name='formacion_academica') THEN
+    ALTER TABLE businesses ADD COLUMN formacion_academica TEXT;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='businesses' AND column_name='experiencia_laboral') THEN
+    ALTER TABLE businesses ADD COLUMN experiencia_laboral TEXT;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='businesses' AND column_name='propuestas_gobierno') THEN
+    ALTER TABLE businesses ADD COLUMN propuestas_gobierno TEXT;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='businesses' AND column_name='movimiento_politico') THEN
+    ALTER TABLE businesses ADD COLUMN movimiento_politico TEXT;
+  END IF;
+END $$;

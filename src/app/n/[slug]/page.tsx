@@ -131,6 +131,36 @@ export default async function BusinessPage({ params }: { params: { slug: string 
           )}
         </div>
 
+        {/* Datos del candidato (si aplica) */}
+        {(b.movimiento_politico || b.formacion_academica || b.experiencia_laboral || b.propuestas_gobierno) && (
+          <section className="rounded-2xl bg-white border border-slate-200 p-4 mb-3 shadow-soft space-y-3">
+            {b.movimiento_politico && (
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Movimiento / Lista</h3>
+                <p className="text-sm font-semibold text-slate-800">{b.movimiento_politico}</p>
+              </div>
+            )}
+            {b.formacion_academica && (
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Formación Académica</h3>
+                <p className="text-sm leading-relaxed whitespace-pre-line text-slate-700 text-justify">{b.formacion_academica}</p>
+              </div>
+            )}
+            {b.experiencia_laboral && (
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Experiencia Laboral</h3>
+                <p className="text-sm leading-relaxed whitespace-pre-line text-slate-700 text-justify">{b.experiencia_laboral}</p>
+              </div>
+            )}
+            {b.propuestas_gobierno && (
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Propuestas de Gobierno 2027–2031</h3>
+                <p className="text-sm leading-relaxed whitespace-pre-line text-slate-700 text-justify">{b.propuestas_gobierno}</p>
+              </div>
+            )}
+          </section>
+        )}
+
         {/* Descripción */}
         {b.description && (
           <section className="rounded-2xl bg-white border border-slate-200 p-4 mb-3 shadow-soft">

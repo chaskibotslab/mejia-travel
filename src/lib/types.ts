@@ -111,6 +111,10 @@ export type Business = {
   instagram: string | null;
   tiktok: string | null;
   parroquia: string | null;
+  formacion_academica: string | null;
+  experiencia_laboral: string | null;
+  propuestas_gobierno: string | null;
+  movimiento_politico: string | null;
   address: string | null;
   address_branch_1: string | null;
   address_branch_2: string | null;
