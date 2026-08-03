@@ -79,12 +79,29 @@ BEGIN
   END IF;
 END $$;
 
--- 5. ARREGLO: permitir 'like' en business_analytics + permitir lectura pública de conteos
+-- 5. ARREGLO: permitir 'like' en business_analytics
 ALTER TABLE public.business_analytics DROP CONSTRAINT IF EXISTS business_analytics_event_type_check;
 ALTER TABLE public.business_analytics ADD CONSTRAINT business_analytics_event_type_check
   CHECK (event_type in ('view','call','whatsapp','map','website','like'));
 
--- Permitir a cualquiera contar analytics (necesario para mostrar likes/vistas públicamente)
+-- Permitir lectura pública (para contar likes/vistas)
 DROP POLICY IF EXISTS "Public can count analytics" ON public.business_analytics;
 CREATE POLICY "Public can count analytics" ON public.business_analytics
   FOR SELECT USING (true);
+
+-- Reemplazar política de insert: vistas anónimas OK, likes requieren auth
+DROP POLICY IF EXISTS "Anyone can insert analytics" ON public.business_analytics;
+CREATE POLICY "Anyone can insert analytics" ON public.business_analytics
+  FOR INSERT WITH CHECK (
+    event_type != 'like' OR (event_type = 'like' AND auth.uid() IS NOT NULL AND user_id = auth.uid())
+  );
+
+-- Permitir a usuarios borrar sus propios likes (unlike)
+DROP POLICY IF EXISTS "Users can delete own likes" ON public.business_analytics;
+CREATE POLICY "Users can delete own likes" ON public.business_analytics
+  FOR DELETE USING (user_id = auth.uid());
+
+-- Índice único: un like por usuario por negocio (evitar duplicados)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_like_per_user
+  ON public.business_analytics(business_id, user_id)
+  WHERE event_type = 'like';
