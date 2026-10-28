@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { createClient } from '@/lib/supabase/server';
 import { Clock, Mountain, MapPin, Compass, ChevronRight, Route as RouteIcon } from 'lucide-react';
 import SafeImage from '@/components/SafeImage';
+import EventRoute from '@/components/EventRoute';
 
 const RouteMap = dynamic(() => import('@/components/RouteMap'), { ssr: false });
 
@@ -12,14 +13,22 @@ export const revalidate = 60;
 export default async function TouristRoutePage({ params }: { params: { slug: string } }) {
   const supabase = createClient();
 
+  // Sin filtrar is_published: la RLS solo devuelve rutas ocultas a los admins,
+  // y aun así lo verificamos abajo para no depender solo de la política.
   const { data: route } = await supabase
     .from('tourist_routes')
     .select('*')
     .eq('slug', params.slug)
-    .eq('is_published', true)
     .maybeSingle();
 
   if (!route) notFound();
+
+  if (!route.is_published) {
+    const { data: u } = await supabase.auth.getUser();
+    if (!u.user) notFound();
+    const { data: p } = await supabase.from('profiles').select('role').eq('id', u.user.id).single();
+    if (p?.role !== 'admin') notFound();
+  }
 
   const { data: stopsData } = await supabase
     .from('tourist_route_stops')
@@ -28,6 +37,11 @@ export default async function TouristRoutePage({ params }: { params: { slug: str
     .order('stop_order');
 
   const stops = (stopsData ?? []) as any[];
+
+  // Rutas tipo evento (muchos locales, sin orden fijo): mapa + cerca de mí + checklist
+  if (route.display_mode === 'event') {
+    return <EventRoute route={route} stops={stops} />;
+  }
   const totalTime = stops.reduce((acc, s) => acc + (s.estimated_time_min ?? 0), 0);
 
   return (
