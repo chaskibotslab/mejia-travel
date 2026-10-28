@@ -1,10 +1,10 @@
-import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { createClient } from '@/lib/supabase/server';
 import { Clock, Mountain, MapPin, Compass, ChevronRight, Route as RouteIcon } from 'lucide-react';
 import SafeImage from '@/components/SafeImage';
 import EventRoute from '@/components/EventRoute';
+import RoutePreviewGate from '@/components/RoutePreviewGate';
 
 const RouteMap = dynamic(() => import('@/components/RouteMap'), { ssr: false });
 
@@ -13,22 +13,16 @@ export const revalidate = 60;
 export default async function TouristRoutePage({ params }: { params: { slug: string } }) {
   const supabase = createClient();
 
-  // Sin filtrar is_published: la RLS solo devuelve rutas ocultas a los admins,
-  // y aun así lo verificamos abajo para no depender solo de la política.
   const { data: route } = await supabase
     .from('tourist_routes')
     .select('*')
     .eq('slug', params.slug)
+    .eq('is_published', true)
     .maybeSingle();
 
-  if (!route) notFound();
-
-  if (!route.is_published) {
-    const { data: u } = await supabase.auth.getUser();
-    if (!u.user) notFound();
-    const { data: p } = await supabase.from('profiles').select('role').eq('id', u.user.id).single();
-    if (p?.role !== 'admin') notFound();
-  }
+  // Ruta oculta o inexistente: la sesión vive en el cliente, así que la
+  // vista previa para admins se resuelve allá (RoutePreviewGate).
+  if (!route) return <RoutePreviewGate slug={params.slug} />;
 
   const { data: stopsData } = await supabase
     .from('tourist_route_stops')
