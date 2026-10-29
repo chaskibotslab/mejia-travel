@@ -36,6 +36,9 @@ function AccountInner() {
   const [recoverySent, setRecoverySent] = useState(false);
   const [recovery, setRecovery] = useState({ token: '', newPassword: '', confirm: '' });
   const [showRecoveryPwd, setShowRecoveryPwd] = useState(false);
+  // OTP para magic link (alternativa al enlace, útil en apps nativas)
+  const [magicOtpOpen, setMagicOtpOpen] = useState(false);
+  const [magicOtp, setMagicOtp] = useState('');
 
   useEffect(() => {
     refresh();
@@ -50,6 +53,24 @@ function AccountInner() {
       setProfile(p);
     }
     setLoading(false);
+  }
+
+  // Traduce errores comunes de Supabase Auth a mensajes amigables en español
+  function friendlyAuthError(raw: string): string {
+    const lower = raw.toLowerCase();
+    if (lower.includes('email rate limit') || lower.includes('rate limit'))
+      return '⏳ Se alcanzó el límite de correos. Intenta de nuevo en unos minutos o usa el enlace mágico.';
+    if (lower.includes('user already registered'))
+      return '⚠️ Ese correo ya tiene una cuenta. Inicia sesión o usa "¿Olvidaste tu contraseña?".';
+    if (lower.includes('invalid login credentials'))
+      return 'Correo o contraseña incorrectos.';
+    if (lower.includes('email not confirmed'))
+      return '📧 Tu correo aún no está confirmado. Revisa tu bandeja de entrada (y spam).';
+    if (lower.includes('signup is disabled'))
+      return '🚫 El registro está desactivado temporalmente. Intenta más tarde.';
+    if (lower.includes('network') || lower.includes('fetch'))
+      return '📶 Error de conexión. Verifica tu internet e intenta de nuevo.';
+    return raw;
   }
 
   async function submit(e: any) {
@@ -77,26 +98,38 @@ function AccountInner() {
       return;
     }
     if (mode === 'signup') {
-      const { data, error } = await supabase.auth.signUp({
-        email: form.email,
-        password: form.password,
-        options: {
-          data: { full_name: form.full_name, phone: form.phone },
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=/cuenta`,
-        },
-      });
-      if (error) {
-        setMsg(error.message);
-      } else if (data.user && (data.user.identities?.length ?? 0) === 0) {
-        // Supabase devuelve éxito silencioso cuando el email YA está registrado
-        // (para evitar enumeración). Detectamos ese caso por identities vacío.
-        setMsg('⚠️ Ese correo ya tiene una cuenta. Inicia sesión o usa "¿Olvidaste tu contraseña?".');
-        setMode('signin');
-      } else if (data.session) {
-        // Auto-confirm activado: el usuario ya está logueado
-        router.push(redirect);
-      } else {
-        setMsg('✉️ Cuenta creada. Revisa tu correo para confirmar antes de iniciar sesión.');
+      try {
+        const signUpPromise = supabase.auth.signUp({
+          email: form.email,
+          password: form.password,
+          options: {
+            data: { full_name: form.full_name, phone: form.phone },
+            emailRedirectTo: `${window.location.origin}/auth/callback?next=/cuenta`,
+          },
+        });
+        const timeout = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('timeout')), 15000)
+        );
+        const { data, error } = await Promise.race([signUpPromise, timeout]);
+        if (error) {
+          setMsg(friendlyAuthError(error.message));
+        } else if (data.user && (data.user.identities?.length ?? 0) === 0) {
+          // Supabase devuelve éxito silencioso cuando el email YA está registrado
+          // (para evitar enumeración). Detectamos ese caso por identities vacío.
+          setMsg('⚠️ Ese correo ya tiene una cuenta. Inicia sesión o usa "¿Olvidaste tu contraseña?".');
+          setMode('signin');
+        } else if (data.session) {
+          // Auto-confirm activado: el usuario ya está logueado
+          router.push(redirect);
+        } else {
+          setMsg('✉️ Cuenta creada. Revisa tu correo para confirmar antes de iniciar sesión.');
+        }
+      } catch (err: any) {
+        if (err?.message === 'timeout') {
+          setMsg('⏳ El servidor tardó demasiado. Puede haber un problema temporal. Intenta de nuevo en unos minutos.');
+        } else {
+          setMsg(friendlyAuthError(err?.message || 'Error inesperado'));
+        }
       }
     } else {
       const { error } = await supabase.auth.signInWithPassword({
@@ -131,9 +164,27 @@ function AccountInner() {
       email: form.email,
       options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=/cuenta` },
     });
-    if (error) setMsg(error.message);
-    else setMsg('✉️ Revisa tu correo y pulsa el enlace para entrar.');
+    if (error) setMsg(friendlyAuthError(error.message));
+    else {
+      setMsg('✉️ Te enviamos un correo. Usa el código de 6 dígitos que aparece en el correo.');
+      setMagicOtpOpen(true);
+    }
     setBusy(false);
+  }
+
+  async function verifyMagicOtp() {
+    if (!form.email || !magicOtp) { setMsg('Ingresa tu correo y el código'); return; }
+    setBusy(true); setMsg(null);
+    const { error } = await supabase.auth.verifyOtp({
+      email: form.email,
+      token: magicOtp.trim(),
+      type: 'email',
+    });
+    setBusy(false);
+    if (error) { setMsg(friendlyAuthError(error.message)); return; }
+    setMagicOtpOpen(false);
+    setMagicOtp('');
+    router.push(redirect);
   }
 
   // Paso 1: envía un código OTP de 6 dígitos al correo del usuario
@@ -142,7 +193,7 @@ function AccountInner() {
     setBusy(true); setMsg(null);
     const { error } = await supabase.auth.resetPasswordForEmail(form.email);
     setBusy(false);
-    if (error) { setMsg(error.message); return; }
+    if (error) { setMsg(friendlyAuthError(error.message)); return; }
     setRecoverySent(true);
     setMsg('🔑 Te enviamos un código a tu correo. Funciona desde cualquier dispositivo.');
   }
@@ -318,8 +369,30 @@ function AccountInner() {
         className="w-full rounded-xl bg-white border border-slate-200 py-3 font-semibold text-slate-700 flex items-center justify-center gap-2 hover:bg-slate-50 disabled:opacity-60"
       >
         <Mail className="w-4 h-4 text-fuchsia-600" />
-        Enviarme un enlace mágico al correo
+        Enviarme un código al correo
       </button>
+
+      {magicOtpOpen && (
+        <div className="mt-3 rounded-2xl border border-brand-200 bg-brand-50/40 p-4 space-y-2.5">
+          <p className="text-xs text-slate-600">Ingresa el <b>código de 6 dígitos</b> que recibiste en <b>{form.email}</b>:</p>
+          <input
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            placeholder="Código del correo"
+            value={magicOtp}
+            onChange={(e) => setMagicOtp(e.target.value.replace(/\D/g, '').slice(0, 10))}
+            className="w-full rounded-xl border border-slate-200 px-3 py-2.5 bg-white text-sm tracking-widest text-center font-mono"
+          />
+          <button
+            type="button"
+            onClick={verifyMagicOtp}
+            disabled={busy || magicOtp.length < 6}
+            className="w-full rounded-xl bg-brand-600 text-white py-2.5 font-semibold disabled:opacity-60 text-sm"
+          >
+            {busy ? 'Verificando…' : 'Entrar con código'}
+          </button>
+        </div>
+      )}
 
       {mode === 'signin' && !recoveryOpen && (
         <button
