@@ -37,7 +37,12 @@ function normalize(s: string) {
   return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
 
-export default function EventRoute({ route, stops }: { route: Route; stops: Stop[] }) {
+export default function EventRoute({ route, stops: rawStops }: { route: Route; stops: Stop[] }) {
+  // Ignora paradas incompletas (sin nombre o en 0,0) para que no aparezcan pines perdidos
+  const stops = useMemo(
+    () => rawStops.filter((s) => s.name?.trim() && Number(s.latitude) !== 0 && Number(s.longitude) !== 0),
+    [rawStops]
+  );
   const color = route.color || '#f97316';
   const storageKey = `route-visited:${route.id}`;
 

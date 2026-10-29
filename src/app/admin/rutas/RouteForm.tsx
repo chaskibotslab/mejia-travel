@@ -49,6 +49,19 @@ const EMPTY_ROUTE: RouteData = {
   sort_order: 100,
 };
 
+// Extrae "lat, lng" de texto pegado: "-0.5159, -78.5644" o un link de Google Maps
+// (?q=-0.51,-78.56 o /@-0.51,-78.56,17z). Devuelve null si no hay un par.
+function parseLatLng(text: string): { lat: string; lng: string } | null {
+  const m = text.match(/(-?\d{1,2}\.\d+)\s*,\s*(-?\d{1,3}\.\d+)/);
+  return m ? { lat: m[1], lng: m[2] } : null;
+}
+
+function isValidCoord(v: number | string, max: number) {
+  if (v === '' || v === null || v === undefined) return false;
+  const n = Number(v);
+  return Number.isFinite(n) && n !== 0 && Math.abs(n) <= max;
+}
+
 function slugify(s: string) {
   return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
@@ -89,6 +102,15 @@ export default function RouteForm({ routeId }: { routeId?: string }) {
   function updateStop(i: number, field: keyof Stop, val: any) {
     setStops((s) => s.map((st, idx) => (idx === i ? { ...st, [field]: val } : st)));
   }
+  // Si se pega "lat, lng" o un link de Maps en cualquiera de los dos campos, llena ambos
+  function updateCoord(i: number, field: 'latitude' | 'longitude', val: string) {
+    const pair = parseLatLng(val);
+    if (pair) {
+      setStops((s) => s.map((st, idx) => (idx === i ? { ...st, latitude: pair.lat, longitude: pair.lng } : st)));
+    } else {
+      updateStop(i, field, val.trim());
+    }
+  }
   function moveStop(i: number, dir: -1 | 1) {
     setStops((s) => {
       const next = [...s];
@@ -103,6 +125,21 @@ export default function RouteForm({ routeId }: { routeId?: string }) {
     setSaving(true);
     setErr('');
     try {
+      // Las filas totalmente vacías se ignoran; las incompletas bloquean el guardado
+      // ANTES de borrar nada (antes se guardaban como "" en 0,0).
+      const filledStops = stops.filter(
+        (s) => (s.name ?? '').trim() || String(s.latitude ?? '').trim() || String(s.longitude ?? '').trim()
+      );
+      const invalidIdx = filledStops.findIndex(
+        (s) => !(s.name ?? '').trim() || !isValidCoord(s.latitude, 90) || !isValidCoord(s.longitude, 180)
+      );
+      if (invalidIdx >= 0) {
+        const bad = filledStops[invalidIdx];
+        throw new Error(
+          `La parada "${(bad.name ?? '').trim() || 'sin nombre'}" necesita nombre, latitud y longitud válidas.`
+        );
+      }
+
       const payload: any = {
         ...route,
         slug: route.slug || slugify(route.name),
@@ -122,8 +159,15 @@ export default function RouteForm({ routeId }: { routeId?: string }) {
 
       // Reemplazar paradas
       await supabase.from('tourist_route_stops').delete().eq('route_id', id!);
-      if (stops.length > 0) {
-        const stopsPayload = stops.map((s, idx) => ({
+      if (filledStops.length > 0) {
+        const stopsPayload = filledStops.map((s: any, idx) => ({
+          // Conserva campos que este formulario no edita (rutas tipo evento)
+          address: s.address ?? null,
+          parish: s.parish ?? null,
+          schedule: s.schedule ?? null,
+          phone: s.phone ?? null,
+          image_url: s.image_url ?? null,
+          ...(s.geo_status ? { geo_status: s.geo_status } : {}),
           route_id: id,
           name: s.name,
           description: s.description || null,
@@ -262,8 +306,8 @@ export default function RouteForm({ routeId }: { routeId?: string }) {
                   placeholder="Descripción opcional"
                 />
                 <div className="grid grid-cols-2 gap-2 mb-2">
-                  <input type="number" step="any" value={s.latitude} onChange={(e) => updateStop(i, 'latitude', e.target.value)} className="input text-xs" placeholder="Latitud (-0.5081)" />
-                  <input type="number" step="any" value={s.longitude} onChange={(e) => updateStop(i, 'longitude', e.target.value)} className="input text-xs" placeholder="Longitud (-78.5680)" />
+                  <input type="text" inputMode="decimal" value={s.latitude ?? ''} onChange={(e) => updateCoord(i, 'latitude', e.target.value)} className="input text-xs" placeholder="Latitud (-0.5081)" />
+                  <input type="text" inputMode="decimal" value={s.longitude ?? ''} onChange={(e) => updateCoord(i, 'longitude', e.target.value)} className="input text-xs" placeholder="Longitud (-78.5680)" />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <input value={s.business_slug} onChange={(e) => updateStop(i, 'business_slug', e.target.value)} className="input text-xs" placeholder="Slug negocio (opcional)" />
@@ -275,7 +319,7 @@ export default function RouteForm({ routeId }: { routeId?: string }) {
         )}
 
         <p className="text-[11px] text-slate-400 mt-3">
-          💡 Tip: usa <a href="https://www.google.com/maps" target="_blank" rel="noreferrer" className="text-fuchsia-600 underline">Google Maps</a> → clic derecho en un punto → copiar coordenadas.
+          💡 Tip: usa <a href="https://www.google.com/maps" target="_blank" rel="noreferrer" className="text-fuchsia-600 underline">Google Maps</a> → clic derecho en un punto → copiar coordenadas. Puedes pegar "-0.5159, -78.5644" o el link de Google Maps en Latitud y se llenan ambos campos.
         </p>
       </section>
 
