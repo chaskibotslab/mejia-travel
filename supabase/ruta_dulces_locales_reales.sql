@@ -39,9 +39,10 @@ where route_id = (select id from public.tourist_routes where slug = 'ruta-de-los
       and name = 'C-Salud – Alquiler y Venta de Oxígeno Medicinal'
   );
 
-create temp table _locales (name text, descr text, lat numeric, lng numeric, ord int, addr text, phone text, geo text) on commit drop;
-
-insert into _locales (name, descr, lat, lng, ord, addr, phone, geo) values
+-- 2) y 3) En una sola instrucción: actualiza los que ya existen (mismo nombre)
+--    y agrega los nuevos al final
+with v (name, descr, lat, lng, ord, addr, phone, geo) as (
+values
   ('Cafetería ¡Qué Verde!', 'Cafetería', -0.5030409, -78.5718379, 1, 'Sector La Bomba, Av. Pablo Guarderas', '+593 96 999 0463', 'verified'),
   ('AGROAHORRO', 'Agropecuaria', -0.5127326, -78.568956, 2, '11 de Noviembre y Pérez Pareja', '+593 99 594 5684', 'verified'),
   ('Consultorio Odontológico Smiling', 'Salud', -0.514972, -78.5667328, 3, 'Luis Felipe Barriga y Luis Cordero', '+593 99 594 5684', 'verified'),
@@ -158,21 +159,20 @@ insert into _locales (name, descr, lat, lng, ord, addr, phone, geo) values
   ('QUELO''S Campo & Piscina', 'Turismo / Recreación', -0.5049001, -78.5642471, 114, null, '+593 93 958 3000', 'verified'),
   ('Electrocell', 'Celulares', -0.5133009018780362, -78.56834056131095, 115, 'Mercado Central de Machachi, planta baja, local 79', '+593 99 638 7812', 'verified'),
   ('Jugos Naturales Merceditas', 'Jugos / Dulces', -0.5133009018780362, -78.56834056131095, 116, 'Av. Amazonas y Luis Cordero (esquina), junto al Mercado Central', '+593 93 975 2739', 'verified'),
-  ('Jugos Naturales Merceditas 2', 'Jugos / Dulces', -0.5034592165287098, -78.56875754035178, 117, 'Junto al Polideportivo', '+593 93 962 2549', 'verified');
-
--- 2) Actualizar los que ya existen
-update public.tourist_route_stops s
-set description = v.descr, latitude = v.lat, longitude = v.lng, address = v.addr,
-    phone = v.phone, geo_status = v.geo, parish = 'Machachi'
-from _locales v
-where s.route_id = (select id from public.tourist_routes where slug = 'ruta-de-los-dulces')
-  and lower(trim(s.name)) = lower(trim(v.name));
-
--- 3) Agregar los nuevos
-with r as (select id from public.tourist_routes where slug = 'ruta-de-los-dulces')
+  ('Jugos Naturales Merceditas 2', 'Jugos / Dulces', -0.5034592165287098, -78.56875754035178, 117, 'Junto al Polideportivo', '+593 93 962 2549', 'verified')
+),
+r as (select id from public.tourist_routes where slug = 'ruta-de-los-dulces'),
+actualizados as (
+  update public.tourist_route_stops s
+  set description = v.descr, latitude = v.lat, longitude = v.lng, address = v.addr,
+      phone = v.phone, geo_status = v.geo, parish = 'Machachi'
+  from v, r
+  where s.route_id = r.id and lower(trim(s.name)) = lower(trim(v.name))
+  returning s.id
+)
 insert into public.tourist_route_stops (route_id, name, description, latitude, longitude, stop_order, address, parish, phone, geo_status)
 select r.id, v.name, v.descr, v.lat, v.lng, 1000 + v.ord, v.addr, 'Machachi', v.phone, v.geo
-from r, _locales v
+from r, v
 where not exists (
   select 1 from public.tourist_route_stops s
   where s.route_id = r.id and lower(trim(s.name)) = lower(trim(v.name))
