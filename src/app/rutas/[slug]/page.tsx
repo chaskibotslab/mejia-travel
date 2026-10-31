@@ -34,6 +34,9 @@ export default async function TouristRoutePage({ params }: { params: { slug: str
 
   // Rutas tipo evento (muchos locales, sin orden fijo): mapa + cerca de mí + checklist
   if (route.display_mode === 'event') {
+    // Programada: la RLS aún no entrega las paradas al público (cuenta regresiva)
+    // o la sesión de admin solo existe en el cliente; se resuelve en RoutePreviewGate.
+    if (route.publish_at && stops.length === 0) return <RoutePreviewGate slug={params.slug} />;
     return <EventRoute route={route} stops={stops} />;
   }
   const totalTime = stops.reduce((acc, s) => acc + (s.estimated_time_min ?? 0), 0);

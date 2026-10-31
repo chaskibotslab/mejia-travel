@@ -31,6 +31,7 @@ type RouteData = {
   is_published: boolean;
   is_featured: boolean;
   sort_order: number;
+  publish_at?: string | null;
 };
 
 const EMPTY_ROUTE: RouteData = {
@@ -60,6 +61,13 @@ function isValidCoord(v: number | string, max: number) {
   if (v === '' || v === null || v === undefined) return false;
   const n = Number(v);
   return Number.isFinite(n) && n !== 0 && Math.abs(n) <= max;
+}
+
+// timestamptz (ISO) <-> valor de <input type="datetime-local"> en la hora del navegador
+function toLocalInput(iso?: string | null) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
 }
 
 function slugify(s: string) {
@@ -268,6 +276,25 @@ export default function RouteForm({ routeId }: { routeId?: string }) {
             <input type="checkbox" checked={route.is_featured} onChange={(e) => update('is_featured', e.target.checked)} /> Destacada
           </label>
         </div>
+
+        <Field
+          label="Activar para el público a partir de (opcional)"
+          help="Antes de esa hora el público ve solo una cuenta regresiva y los admins ven todo. Vacío = visible apenas se publica."
+        >
+          <div className="flex gap-2">
+            <input
+              type="datetime-local"
+              value={toLocalInput(route.publish_at)}
+              onChange={(e) => update('publish_at', e.target.value ? new Date(e.target.value).toISOString() : null)}
+              className="input flex-1"
+            />
+            {route.publish_at && (
+              <button type="button" onClick={() => update('publish_at', null)} className="text-xs font-semibold text-slate-500 px-2">
+                Quitar
+              </button>
+            )}
+          </div>
+        </Field>
       </section>
 
       {/* PARADAS */}

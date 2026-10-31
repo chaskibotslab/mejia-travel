@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Loader2, Plus, Pencil, Trash2, Eye, EyeOff, Star, MapPin } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, Eye, EyeOff, Star, MapPin, Clock } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 type Route = {
@@ -17,6 +17,7 @@ type Route = {
   is_published: boolean;
   is_featured: boolean;
   sort_order: number;
+  publish_at?: string | null;
 };
 
 export default function AdminRoutesPage() {
@@ -92,6 +93,20 @@ export default function AdminRoutesPage() {
                   {r.is_published ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
                   {r.is_published ? 'Publicada' : 'Borrador'}
                 </button>
+                {r.is_published && r.publish_at && new Date(r.publish_at).getTime() > Date.now() && (
+                  <span className="px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1 bg-orange-100 text-orange-700">
+                    <Clock className="w-3 h-3" />
+                    Público desde{' '}
+                    {new Date(r.publish_at).toLocaleString('es-EC', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: false,
+                      timeZone: 'America/Guayaquil',
+                    })}
+                  </span>
+                )}
                 <button
                   onClick={() => toggle(r.id, 'is_featured', !r.is_featured)}
                   className={`px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1 ${r.is_featured ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'}`}

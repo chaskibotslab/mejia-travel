@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { useEffect, useMemo, useState } from 'react';
 import { MapPin, Navigation, Search, Check, Clock, EyeOff, Loader2, ChevronRight } from 'lucide-react';
 import type { EventStop } from './EventRouteMap';
+import { formatEcuadorTime } from './RouteCountdown';
 
 const EventRouteMap = dynamic(() => import('./EventRouteMap'), { ssr: false });
 
@@ -16,6 +17,7 @@ type Route = {
   short_description?: string | null;
   color?: string | null;
   is_published?: boolean;
+  publish_at?: string | null;
 };
 
 // Distancia en km entre dos coordenadas (fórmula de Haversine)
@@ -138,6 +140,11 @@ export default function EventRoute({ route, stops: rawStops }: { route: Route; s
           {route.is_published === false && (
             <span className="inline-block mb-3 text-[10px] font-bold uppercase tracking-wider bg-yellow-400 text-yellow-950 px-2 py-0.5 rounded-full">
               Vista previa · solo admins
+            </span>
+          )}
+          {route.is_published !== false && route.publish_at && new Date(route.publish_at).getTime() > Date.now() && (
+            <span className="inline-block mb-3 text-[10px] font-bold uppercase tracking-wider bg-yellow-400 text-yellow-950 px-2 py-0.5 rounded-full">
+              Vista de admin · el público la verá a las {formatEcuadorTime(route.publish_at)}
             </span>
           )}
           <p className="text-xs font-bold uppercase tracking-wider text-orange-300">Ruta especial</p>
